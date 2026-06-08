@@ -4,7 +4,7 @@
         "id": "forgeconfigapiport",
         "group": "fuzs.forgeconfigapiport",
         "name": "Forge Config API Port",
-        "version": "26.1.4",
+        "version": "26.1.5",
         "authors": [
             "Fuzs"
         ],

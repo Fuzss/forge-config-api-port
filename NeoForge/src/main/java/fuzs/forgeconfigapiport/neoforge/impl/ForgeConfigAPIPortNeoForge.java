@@ -3,8 +3,12 @@ package fuzs.forgeconfigapiport.neoforge.impl;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import fuzs.forgeconfigapiport.neoforge.api.v5.ForgeConfigRegistry;
+import net.minecraft.DetectedVersion;
 import net.minecraft.data.metadata.PackMetadataGenerator;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackFormat;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -23,10 +27,16 @@ public class ForgeConfigAPIPortNeoForge {
 
     private static void registerLoadingHandlers(IEventBus eventBus) {
         eventBus.addListener((final GatherDataEvent.Client event) -> {
+            // Set only the major version here to stay compatible across different minor Minecraft versions.
             event.getGenerator()
                     .addProvider(true,
-                            PackMetadataGenerator.forFeaturePack(event.getGenerator().getPackOutput(),
-                                    Component.literal(event.getModContainer().getModInfo().getDescription())));
+                            new PackMetadataGenerator(event.getGenerator()
+                                    .getPackOutput()).add(PackMetadataSection.SERVER_TYPE,
+                                    new PackMetadataSection(Component.literal(event.getModContainer()
+                                            .getModInfo()
+                                            .getDescription()),
+                                            PackFormat.of(DetectedVersion.BUILT_IN.packVersion(PackType.SERVER_DATA)
+                                                    .major()).minorRange())));
         });
     }
 
