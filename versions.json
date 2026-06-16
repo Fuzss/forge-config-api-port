@@ -1,7 +1,7 @@
 {
   "published": true,
   "branches": {
-    "26.1.x": "maintained",
+    "26.1.x": "primary",
     "1.21.11": "fixes",
     "1.21.10": "fixes",
     "1.21.8": "fixes",
@@ -9,7 +9,6 @@
     "1.21.4": "fixes",
     "1.21.3": "fixes",
     "1.21.1": "fixes",
-    "1.20.1": "fixes",
-    "26.2.x": "primary"
+    "1.20.1": "fixes"
   }
 }
