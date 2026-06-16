@@ -1,10 +1,10 @@
 {
-    "minecraft": "26.1.2",
+    "minecraft": "26.2",
     "mod": {
         "id": "forgeconfigapiport",
         "group": "fuzs.forgeconfigapiport",
         "name": "Forge Config API Port",
-        "version": "26.1.5",
+        "version": "26.2.0",
         "authors": [
             "Fuzs"
         ],
@@ -49,7 +49,6 @@
     },
     "platforms": [
         "fabric",
-        "forge",
         "neoforge"
     ]
 }

@@ -61,7 +61,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -131,14 +131,14 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         private final Set<String> untranslatablesWithFallback = new HashSet<>();
 
         public String check(final String translationKey) {
-            if (!I18n.exists(translationKey)) {
+            if (!Language.getInstance().has(translationKey)) {
                 untranslatables.add(translationKey);
             }
             return translationKey;
         }
 
         public String check(final String translationKey, final String fallback) {
-            if (!I18n.exists(translationKey)) {
+            if (!Language.getInstance().has(translationKey)) {
                 untranslatablesWithFallback.add(translationKey);
                 return check(fallback);
             }
@@ -146,7 +146,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         public boolean existsWithFallback(final String translationKey) {
-            if (!I18n.exists(translationKey)) {
+            if (!Language.getInstance().has(translationKey)) {
                 untranslatablesWithFallback.add(translationKey);
                 return false;
             }
@@ -158,7 +158,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
          * Otherwise returns an empty Component.
          */
         public Component optional(final Component prefix, final String translationKey, final ChatFormatting... style) {
-            if (I18n.exists(translationKey)) {
+            if (Language.getInstance().has(translationKey)) {
                 return Component.empty().append(prefix).append(Component.translatable(translationKey).withStyle(style));
             }
             return Component.empty();
@@ -255,7 +255,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
     // Forge Config Api Port: replace ModContainer with mod id
     protected final String mod;
-    private final Function4<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen;
+    private final Function4<ConfigurationScreen, Type, ModConfig, Component, Screen> sectionScreen;
 
     public RestartType needsRestart = RestartType.NONE;
     // If there is only one config type (and it can be edited, we show that instantly on the way "down" and want to close on the way "up".
@@ -268,12 +268,12 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     }
 
     // Forge Config Api Port: replace ModContainer with mod id
-    public ConfigurationScreen(final String mod, final Screen parent, ConfigurationSectionScreen.Filter filter) {
+    public ConfigurationScreen(final String mod, final Screen parent, Filter filter) {
         this(mod, parent, (a, b, c, d) -> new ConfigurationSectionScreen(a, b, c, d, filter));
     }
 
     // Forge Config Api Port: replace ModContainer with mod id
-    public ConfigurationScreen(final String mod, final Screen parent, Function4<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen) {
+    public ConfigurationScreen(final String mod, final Screen parent, Function4<ConfigurationScreen, Type, ModConfig, Component, Screen> sectionScreen) {
         super(parent, Minecraft.getInstance().options, Component.translatable(translationChecker.check(mod + ".configuration.title", LANG_PREFIX + "title"), FabricLoader.getInstance().getModContainer(mod).map(
                 ModContainer::getMetadata).map(
                 ModMetadata::getName).orElse(mod)));
@@ -285,7 +285,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     protected void addOptions() {
         Button btn = null;
         int count = 0;
-        for (final Type type : ModConfig.Type.values()) {
+        for (final Type type : Type.values()) {
             boolean headerAdded = false;
             for (final ModConfig modConfig : ModConfigs.getConfigSet(type)) {
                 // Forge Config Api Port: check for correct config spec type
@@ -296,13 +296,13 @@ public final class ConfigurationScreen extends OptionsSubScreen {
                         headerAdded = true;
                     }
                     btn = Button.builder(Component.translatable(SECTION, translatableConfig(modConfig, "", LANG_PREFIX + "type." + modConfig.getType().name().toLowerCase(Locale.ROOT))),
-                            button -> minecraft.setScreen(sectionScreen.apply(this, type, modConfig, translatableConfig(modConfig, ".title", LANG_PREFIX + "title." + type.name().toLowerCase(Locale.ROOT))))).width(BIG_BUTTON_WIDTH).build();
+                            button -> minecraft.gui.setScreen(sectionScreen.apply(this, type, modConfig, translatableConfig(modConfig, ".title", LANG_PREFIX + "title." + type.name().toLowerCase(Locale.ROOT))))).width(BIG_BUTTON_WIDTH).build();
                     MutableComponent tooltip = Component.empty();
                     if (!((ModConfigSpec) modConfig.getSpec()).isLoaded()) {
                         tooltip.append(TOOLTIP_CANNOT_EDIT_NOT_LOADED).append(EMPTY_LINE);
                         btn.active = false;
                         count = 99; // prevent autoClose
-                    } else if (type == Type.SERVER && minecraft.getCurrentServer() != null && !minecraft.isSingleplayer()) {
+                    } else if (type == Type.SERVER && minecraft.getCurrentServer() != null && (!minecraft.hasSingleplayerServer() || !minecraft.getSingleplayerServer().isPublished())) {
                         tooltip.append(TOOLTIP_CANNOT_EDIT_THIS_WHILE_ONLINE).append(EMPTY_LINE);
                         btn.active = false;
                         count = 99; // prevent autoClose
@@ -346,7 +346,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         translationChecker.finish();
         switch (needsRestart) {
             case GAME -> {
-                minecraft.setScreen(new TooltipConfirmScreen(b -> {
+                minecraft.gui.setScreen(new TooltipConfirmScreen(b -> {
                     if (b) {
                         minecraft.stop();
                     } else {
@@ -357,7 +357,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             }
             case WORLD -> {
                 if (minecraft.level != null) {
-                    minecraft.setScreen(new TooltipConfirmScreen(b -> {
+                    minecraft.gui.setScreen(new TooltipConfirmScreen(b -> {
                         if (b) {
                             // when changing server configs from the client is added, this is where we tell the server to restart and activate the new config.
                             // also needs a different text in MP ("server will restart/exit, yada yada") than in SP
@@ -386,11 +386,11 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
         TitleScreen titlescreen = new TitleScreen();
         if (flag) {
-            this.minecraft.setScreen(titlescreen);
+            this.minecraft.gui.setScreen(titlescreen);
         } else if (serverdata != null && serverdata.isRealm()) {
-            this.minecraft.setScreen(new RealmsMainScreen(titlescreen));
+            this.minecraft.gui.setScreen(new RealmsMainScreen(titlescreen));
         } else {
-            this.minecraft.setScreen(new JoinMultiplayerScreen(titlescreen));
+            this.minecraft.gui.setScreen(new JoinMultiplayerScreen(titlescreen));
         }
     }
 
@@ -505,7 +505,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
          * @param type      The {@link Type} this configuration is for. Only used to generate the title of the screen.
          * @param modConfig The actual config to show and edit.
          */
-        public ConfigurationSectionScreen(final Screen parent, final ModConfig.Type type, final ModConfig modConfig, Component title) {
+        public ConfigurationSectionScreen(final Screen parent, final Type type, final ModConfig modConfig, Component title) {
             this(parent, type, modConfig, title, (c, k, e) -> e);
         }
 
@@ -518,7 +518,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
          * @param filter    The {@link Filter} to use.
          * @param modConfig The actual config to show and edit.
          */
-        public ConfigurationSectionScreen(final Screen parent, final ModConfig.Type type, final ModConfig modConfig, Component title, Filter filter) {
+        public ConfigurationSectionScreen(final Screen parent, final Type type, final ModConfig modConfig, Component title, Filter filter) {
             this(Context.top(modConfig.getModId(), parent, modConfig, filter), title);
             needsRestart = type == Type.STARTUP ? RestartType.GAME : RestartType.NONE;
         }
@@ -677,13 +677,13 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             return Collections.emptyList();
         }
 
-        protected boolean isNonDefault(ModConfigSpec.ConfigValue<?> cv) {
+        protected boolean isNonDefault(ConfigValue<?> cv) {
             return !Objects.equals(cv.getRaw(), cv.getDefault());
         }
 
         protected boolean isAnyNondefault() {
             for (final Entry entry : context.entries) {
-                if (entry.getRawValue() instanceof final ModConfigSpec.ConfigValue<?> cv) {
+                if (entry.getRawValue() instanceof final ConfigValue<?> cv) {
                     if (!(getValueSpec(entry.getKey()) instanceof ListValueSpec) && isNonDefault(cv)) {
                         return true;
                     }
@@ -726,7 +726,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         /**
-         * Called when an entry is encountered that is neither a {@link ModConfigSpec.ConfigValue} nor a section.
+         * Called when an entry is encountered that is neither a {@link ConfigValue} nor a section.
          * Override this to produce whatever UI elements are appropriate for this object.<p>
          *
          * Note that this case is unusual and shouldn't happen unless someone injected something into the config system.
@@ -741,7 +741,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         /**
-         * Called when a {@link ModConfigSpec.ConfigValue} is found that has an unknown data type.
+         * Called when a {@link ConfigValue} is found that has an unknown data type.
          * Override this to produce whatever UI elements are appropriate for this object.<p>
          *
          * @param key   The key of the entry.
@@ -760,15 +760,15 @@ public final class ConfigurationScreen extends OptionsSubScreen {
          */
         public record Custom<T>(List<T> values) implements OptionInstance.ValueSet<T> {
             @Override
-            public Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> tooltip, Options options, int x, int y, int width, Consumer<T> target) {
+            public Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> tooltip, Options options, int x, int y, int width, OptionInstance.ValueUpdateListener<? super T> target) {
                 return optionsInstance -> CycleButton.builder(optionsInstance.toString, (Supplier<T>) optionsInstance::get)
                         .withValues(CycleButton.ValueListSupplier.create(this.values))
                         .withTooltip(tooltip)
                         .displayOnlyValue()
-                        .create(x, y, width, 20, optionsInstance.caption, (source, newValue) -> {
+                        .create(x, y, width, 20, optionsInstance.caption, (_, newValue) -> {
                             optionsInstance.set(newValue);
                             options.save();
-                            target.accept(newValue);
+                            target.valueChanged(newValue);
                         });
             }
 
@@ -927,7 +927,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             if (subconfig.isEmpty()) return null;
             return new Element(Component.translatable(SECTION, getTranslationComponent(key)), getTooltipComponent(key, null),
                     Button.builder(Component.translatable(SECTION, Component.translatable(translationChecker.check(getTranslationKey(key) + ".button", SECTION_TEXT))),
-                                    button -> minecraft.setScreen(sectionCache.computeIfAbsent(key,
+                                    button -> minecraft.gui.setScreen(sectionCache.computeIfAbsent(key,
                                             k -> new ConfigurationSectionScreen(context, this, subconfig.valueMap(), key, subsection.entrySet(), Component.translatable(getTranslationKey(key))).rebuild())))
                             .tooltip(Tooltip.create(getTooltipComponent(key, null)))
                             .width(Button.DEFAULT_WIDTH)
@@ -936,10 +936,10 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         @Nullable
-        protected <T> Element createList(final String key, final ListValueSpec spec, final ModConfigSpec.ConfigValue<List<T>> list) {
+        protected <T> Element createList(final String key, final ListValueSpec spec, final ConfigValue<List<T>> list) {
             return new Element(Component.translatable(SECTION, getTranslationComponent(key)), getTooltipComponent(key, null),
                     Button.builder(Component.translatable(SECTION, Component.translatable(translationChecker.check(getTranslationKey(key) + ".button", SECTION_TEXT))),
-                                    button -> minecraft.setScreen(sectionCache.computeIfAbsent(key,
+                                    button -> minecraft.gui.setScreen(sectionCache.computeIfAbsent(key,
                                             k -> new ConfigurationListScreen<>(Context.list(context, this), key, Component.translatable(CRUMB, this.getTitle(), CRUMB_SEPARATOR, getTranslationComponent(key)), spec, list)).rebuild()))
                             .tooltip(Tooltip.create(getTooltipComponent(key, null))).build(),
                     false);
@@ -987,7 +987,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             resetButton = Button.builder(RESET, button -> {
                 List<UndoManager.Step<?>> list = new ArrayList<>();
                 for (final Entry entry : context.entries) {
-                    if (entry.getRawValue() instanceof final ModConfigSpec.ConfigValue cv && !(getValueSpec(entry.getKey()) instanceof ListValueSpec) && isNonDefault(cv)) {
+                    if (entry.getRawValue() instanceof final ConfigValue cv && !(getValueSpec(entry.getKey()) instanceof ListValueSpec) && isNonDefault(cv)) {
                         final String key = entry.getKey();
                         list.add(undoManager.step(v -> {
                             cv.set(v);
@@ -1041,8 +1041,8 @@ public final class ConfigurationScreen extends OptionsSubScreen {
      * <li>To use another UI element, override the matching <code>create*Value()</code> method and return your new UI element wrapped in a {@link Element}.
      * <li>To add additional (synthetic) config values, override {@link #rebuild()} and add them to <code>list</code>. ({@link #createSyntheticValues()} is not used for lists).
      * <li>To be notified on each changed value instead of getting one {@code ModConfigEvent} at the end, override {@link #onChanged(String)} on the {@link ConfigurationScreen},
-     * not here. The list will only be updated in the {@link ModConfigSpec.ConfigValue} when this screen is closed.
-     * <li>To limit the number of elements in a list, pass a {@link ModConfigSpec.Range} to {@link ModConfigSpec.Builder#defineList(List, Supplier, Supplier, Predicate, Range)}.
+     * not here. The list will only be updated in the {@link ConfigValue} when this screen is closed.
+     * <li>To limit the number of elements in a list, pass a {@link Range} to {@link ModConfigSpec.Builder#defineList(List, Supplier, Supplier, Predicate, Range)}.
      * </ul>
      */
     public static class ConfigurationListScreen<T> extends ConfigurationSectionScreen {
@@ -1050,12 +1050,12 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         protected final ListValueSpec spec;
 
         // the original data
-        protected final ModConfigSpec.ConfigValue<List<T>> valueList;
+        protected final ConfigValue<List<T>> valueList;
         // the copy of the data we are working on
         protected List<T> cfgList;
 
         public ConfigurationListScreen(final Context context, final String key, final Component title, final ListValueSpec spec,
-                                       final ModConfigSpec.ConfigValue<List<T>> valueList) {
+                                       final ConfigValue<List<T>> valueList) {
             super(context, title);
             this.key = key;
             this.spec = spec;
@@ -1102,6 +1102,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             return this;
         }
 
+        @Override
         protected boolean isAnyNondefault() {
             return !cfgList.equals(valueList.getDefault());
         }
@@ -1249,6 +1250,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             super.extractRenderState(graphics, mouseX, mouseY, a);
         }
 
+        @Override
         protected void onChanged(final String key) {
             changed = true;
             // parent's onChanged() will be fired when we actually assign the changed list. For now,
@@ -1256,6 +1258,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         @SuppressWarnings("unchecked")
+        @Override
         protected void createResetButton() {
             resetButton = Button.builder(RESET, button -> {
                 undoManager.add(
