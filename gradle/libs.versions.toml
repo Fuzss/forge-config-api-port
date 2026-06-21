@@ -1,6 +1,6 @@
 [versions]
 
-forge-gradle = "7.0.17"
+forge-gradle = "7.0.29"
 
 [plugins]
 
