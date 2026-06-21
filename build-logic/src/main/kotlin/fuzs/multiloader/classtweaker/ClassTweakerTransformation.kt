@@ -11,12 +11,16 @@ import java.io.File
 val TRANSITIVE_CLASS_TWEAKER_ACCESS_LEVELS: Map<String, String> = mapOf(
     "transitive-accessible" to "public",
     "transitive-extendable" to "public-f",
-    "transitive-mutable" to "public-f"
+    "transitive-mutable" to "public-f",
+    "transitive-inject-interface" to "",
+    "transitive-extend-enum" to ""
 )
 val CLASS_TWEAKER_ACCESS_LEVELS: Map<String, String> = mapOf(
     "accessible" to "public",
     "extendable" to "public-f",
-    "mutable" to "public-f"
+    "mutable" to "public-f",
+    "inject-interface" to "",
+    "extend-enum" to ""
 ) + TRANSITIVE_CLASS_TWEAKER_ACCESS_LEVELS
 private const val COLUMN_SEPARATOR: String = " "
 private val CLASS_TWEAKER_HEADER: String = listOf("classTweaker", "v2", "official").joinToString(COLUMN_SEPARATOR)
@@ -50,16 +54,19 @@ fun generateAccessTransformerFile(
     accessLevels: Map<String, String> = CLASS_TWEAKER_ACCESS_LEVELS
 ) {
     generateClassTweakerFile(inputFile, outputFile, accessLevels) { lines ->
-        lines.map { line ->
+        lines.mapNotNull { line ->
             val entry = line.split(Regex("\\s+"))
 
             if (entry.size < 3) error("Invalid entry: $line")
 
-            val access = entry[0]
+            val modifier = accessLevels[entry[0]] ?: error("Invalid entry: $line")
+
+            if (modifier.isBlank()) {
+                return@mapNotNull null
+            }
+
             val type = entry[1]
             val owner = entry[2].replace('/', '.')
-
-            val modifier = accessLevels[access] ?: error("Invalid entry: $line")
 
             when (type) {
                 "class" -> {

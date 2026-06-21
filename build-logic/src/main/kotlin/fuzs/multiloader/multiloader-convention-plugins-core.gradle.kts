@@ -33,34 +33,42 @@ repositories {
         name = "Fuzs Mod Resources"
         url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
     }
+
     maven {
         name = "Parchment"
         url = uri("https://maven.parchmentmc.org")
     }
+
     maven {
         name = "Jared"
         url = uri("https://maven.blamejared.com/")
     }
+
     maven {
         name = "Jitpack"
         url = uri("https://jitpack.io")
     }
+
     maven {
         name = "Shedaniel"
         url = uri("https://maven.shedaniel.me/")
     }
+
     maven {
         name = "Wisp Forest"
         url = uri("https://maven.wispforest.io/releases/")
     }
+
     maven {
         name = "Su5eD"
         url = uri("https://maven.su5ed.dev/releases/")
     }
+
     maven {
         name = "Minecraft Forge"
         url = uri("https://maven.minecraftforge.net/")
     }
+
     maven {
         name = "Terraformers"
         url = uri("https://maven.terraformersmc.com/")
@@ -90,17 +98,9 @@ repositories {
         }
     }
 
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "RedlanceMinecraft"
-                url = uri("https://repo.redlance.org/public")
-            }
-        }
-        filter {
-            @Suppress("UnstableApiUsage")
-            includeGroupAndSubgroups("com.zigythebird")
-        }
+    maven {
+        name = "RedlanceMinecraft"
+        url = uri("https://repo.redlance.org/public")
     }
 
     exclusiveContent {
@@ -124,6 +124,21 @@ repositories {
         }
         filter {
             includeGroup("net.tslat.smartbrainlib")
+        }
+    }
+
+    repositories {
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Nucleoid"
+                    url = uri("https://maven.nucleoid.xyz/releases")
+                }
+            }
+            filter {
+                @Suppress("UnstableApiUsage")
+                includeGroupAndSubgroups("eu.pb4")
+            }
         }
     }
 
@@ -368,10 +383,10 @@ val generateMixinConfig = tasks.register<MixinConfigJsonTask>("generateMixinConf
     outputFile.set(project.layout.buildDirectory.file("generated/resources/${mod.id}.${project.name.lowercase()}.mixins.json"))
 
     json {
-        mixinPackage.set("${project.group}.${project.projectPlatform.name.lowercase()}.mixin")
+        mixinPackage.set("${project.group}.${project.packageName}.mixin")
         minVersion.set("0.8.0")
         required.set(true)
-        compatibilityLevel.set("JAVA_${versionCatalog.findVersion("java").get().requiredVersion}")
+        compatibilityLevel.set("JAVA_${project.versionCatalog.findVersion("java").get().requiredVersion}")
         injectors {
             defaultRequire.set(1)
         }
@@ -441,6 +456,18 @@ spotless {
             "Change GuiGraphics to GuiGraphicsExtractor",
             "\\bGuiGraphics\\b",
             "GuiGraphicsExtractor"
+        )
+
+        replaceRegex(
+            "Update CameraRenderState import",
+            "\\bimport\\s+net\\.minecraft\\.client\\.renderer\\.state\\.CameraRenderState;",
+            "import net.minecraft.client.renderer.state.level.CameraRenderState;"
+        )
+
+        replaceRegex(
+            "Update BlockStateModel import",
+            "\\bimport\\s+net\\.minecraft\\.client\\.renderer\\.block\\.model\\.BlockStateModel;",
+            "import net.minecraft.client.renderer.block.dispatch.BlockStateModel;"
         )
 
         replaceRegex(

@@ -38,12 +38,9 @@ loom {
 
     runs {
         configureEach {
-            name(
-                "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${project.minecraftVersion}"
-            )
+            name("${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${project.minecraftVersion}")
             runDir("../run")
             ideConfigGenerated(true)
-            startFirstThread()
             vmArgs(
                 "-Xms1G",
                 "-Xmx4G",
@@ -57,6 +54,10 @@ loom {
                 "-Dpuzzleslib.isDevelopmentEnvironment=true",
                 "-D${mod.id}.isDevelopmentEnvironment=true"
             )
+
+            if (System.getProperty("os.name").startsWith("Mac")) {
+                vmArgs("-XstartOnFirstThread")
+            }
         }
 
         named("client") {
@@ -90,7 +91,7 @@ dependencies {
     minecraft("com.mojang:minecraft:${versionCatalog.findVersion("game").get()}")
     implementation(versionCatalog.findLibrary("fabricloader.fabric").get())
 
-    if (applyDefaultDependencies) {
+    if (defaultDependencies) {
         versionCatalog.findLibrary("modmenu.fabric")
             .getOrNull()
             ?.let { localRuntime(it) { isTransitive = false } }

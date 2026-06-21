@@ -35,6 +35,9 @@ val Project.metadata: ModMetadata
 val Project.mod: ModEntry
     get() = metadata.mod
 
+val Project.packageName: String
+    get() = name.lowercase().replace(Regex("[^a-z0-9]+"), ".").trim('.')
+
 // Load the loom.platform Architectury Loom property.
 val Project.projectPlatform: ModLoaderProvider
     get() = (if (extra.has("loom.platform")) extra["loom.platform"] as? String else null)?.uppercase()
@@ -59,7 +62,7 @@ val Project.debugRemoteUploads: Boolean
     get() = providers.gradleProperty("project.debug").orNull.toBoolean()
 
 // The "project.isolated" property controls whether some default mods are omitted as dependencies.
-val Project.applyDefaultDependencies: Boolean
+val Project.defaultDependencies: Boolean
     get() = providers.gradleProperty("project.isolated").orNull.toBoolean().not()
 
 // The "project.strict" property controls whether built artifacts are required to run only on the version they have been compiled against.
@@ -68,6 +71,7 @@ fun Project.strictVersioning(version: String): Boolean {
     return version.startsWith("1.") || providers.gradleProperty("project.strict").orNull.toBoolean()
 }
 
-// The Minecraft version representing the supported range of versions e.g., 1.21.1, 26.1.x
+// The Minecraft version representing the supported range of versions e.g., 1.21.1, 26.1.x.
+// This is also used when referencing the GitHub branch for the current Minecraft version.
 val Project.minecraftVersion: String
     get() = artifactVersion(versionCatalog.findVersion("minecraft").get().requiredVersion)

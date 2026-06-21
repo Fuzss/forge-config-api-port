@@ -6,3 +6,4 @@ accessible  field   net/minecraft/client/OptionInstance caption Lnet/minecraft/n
 accessible  field   net/minecraft/server/network/ServerCommonPacketListenerImpl connection  Lnet/minecraft/network/Connection;
 accessible  field   net/minecraft/client/multiplayer/ClientCommonPacketListenerImpl connection  Lnet/minecraft/network/Connection;
 accessible  method  net/minecraft/client/gui/components/AbstractSelectionList   clearEntries    ()V
+accessible  method  net/minecraft/client/gui/screens/worldselection/WorldSelectionList  clearEntries    ()V

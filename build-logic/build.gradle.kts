@@ -5,10 +5,10 @@ import org.w3c.dom.Element
 plugins {
     `kotlin-dsl`
     `java-gradle-plugin`
-    `java`
+    java
     `java-library`
     `maven-publish`
-    `signing`
+    signing
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
 }

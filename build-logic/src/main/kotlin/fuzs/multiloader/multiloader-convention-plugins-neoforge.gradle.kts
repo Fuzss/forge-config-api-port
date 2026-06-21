@@ -45,9 +45,8 @@ neoForge {
 
     runs {
         configureEach {
-            ideName =
-                "${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${project.minecraftVersion} (${project.path})"
-            gameDirectory = rootProject.file("run")
+            ideName.set("${project.name} ${this.name.replaceFirstChar { it.titlecase() }} ${project.minecraftVersion} (${project.path})")
+            gameDirectory.set(rootProject.file("run"))
             jvmArguments.addAll(
                 "-Xms1G",
                 "-Xmx4G",
@@ -55,6 +54,10 @@ neoForge {
                 "-Dpuzzleslib.isDevelopmentEnvironment=true",
                 "-D${mod.id}.isDevelopmentEnvironment=true"
             )
+
+            if (System.getProperty("os.name").startsWith("Mac")) {
+                jvmArguments.add("-XstartOnFirstThread")
+            }
 
             // We cannot set the -Dlog4j2.configurationFile property, as MDG always overrides it.
             loggingConfigFile.set(
@@ -87,7 +90,7 @@ neoForge {
 
         register("server") {
             server()
-            gameDirectory = rootProject.file("run/server")
+            gameDirectory.set(rootProject.file("run/server"))
             programArguments.addAll("--nogui")
         }
 
@@ -128,7 +131,7 @@ repositories {
 }
 
 dependencies {
-    if (applyDefaultDependencies) {
+    if (defaultDependencies) {
         versionCatalog.findLibrary("bettermodsbutton.neoforge")
             .getOrNull()
             ?.let { "localRuntime"(it) { isTransitive = false } }

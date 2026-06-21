@@ -1,6 +1,6 @@
 package fuzs.multiloader
 
-import fuzs.multiloader.extension.applyDefaultDependencies
+import fuzs.multiloader.extension.defaultDependencies
 import fuzs.multiloader.extension.expectPlatform
 import fuzs.multiloader.extension.versionCatalog
 import fuzs.multiloader.metadata.ModLoaderProvider
@@ -13,17 +13,14 @@ plugins {
 project.expectPlatform(ModLoaderProvider.COMMON)
 
 neoForge {
-    enable {
-        neoFormVersion = versionCatalog.findVersion("neoform").get().requiredVersion
-        isDisableRecompilation = true
-    }
+    neoFormVersion = versionCatalog.findVersion("neoform").get().requiredVersion
 }
 
 dependencies {
     compileOnly(versionCatalog.findLibrary("mixin.common").get())
     compileOnly(versionCatalog.findLibrary("mixinextras.common").get())
 
-    if (applyDefaultDependencies) {
+    if (defaultDependencies) {
         versionCatalog.findLibrary("multiloaderaccesswideners.common")
             .getOrNull()
             ?.let { accessTransformers(it) { isTransitive = false } }

@@ -22,8 +22,7 @@ configurations {
 }
 
 neoForge {
-    // This breaks creating game artifacts in the first place which are required for looking up access level changes.
-    validateAccessTransformers = false
+    validateAccessTransformers.set(true)
     accessTransformers {
         files.setFrom(generatedAccessTransformerFile)
         publish(generatedTransitiveAccessTransformerFile)

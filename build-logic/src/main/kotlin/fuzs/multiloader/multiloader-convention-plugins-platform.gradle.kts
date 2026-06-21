@@ -74,10 +74,10 @@ publishMods {
     val jarTask = tasks.named<AbstractArchiveTask>("jar")
     file.set(jarTask.get().archiveFile)
 
-    displayName.set("[${name.uppercase()}] [${minecraftVersion}] v${mod.version}")
+    displayName.set("[${name.uppercase()}] [${project.minecraftVersion}] v${mod.version}")
     type.set(STABLE)
     version.set(mod.version)
-    modLoaders.add(name.lowercase())
+    modLoaders.add(projectPlatform.name.lowercase())
     dryRun.set(debugRemoteUploads)
 
     val minecraftVersion = versionCatalog.findVersion("minecraft").get().requiredVersion
@@ -101,8 +101,14 @@ publishMods {
 
                         val javaVersion = versionCatalog.findVersion("java").get().requiredVersion
                         javaVersions.add(JavaVersion.toVersion(javaVersion))
-                        if (metadata.environments.forClient()) clientRequired.set(true)
-                        if (metadata.environments.forServer()) serverRequired.set(true)
+
+                        if (metadata.environments.forClient()) {
+                            client.set(true)
+                        }
+
+                        if (metadata.environments.forServer()) {
+                            server.set(true)
+                        }
 
                         for (entry in metadata.dependencies) {
                             if (entry.platforms.any { it.matches(projectPlatform) }) {
@@ -157,12 +163,12 @@ publishMods {
                     github {
                         accessToken.set(remoteToken)
                         repository.set(link.url().replace("https://github.com/", ""))
-                        commitish.set("main")
+                        commitish.set(project.minecraftVersion)
                         tagName.set("v${mod.version}-mc$minecraftVersion/${project.name.lowercase()}")
 
                         // Only include the relevant changelog section.
                         val changelogSections = changelogText.split(Regex("(?m)^## \\["), limit = 3)
-                        changelog.set("## " + changelogSections.getOrNull(1)?.trim())
+                        changelog.set("## [" + changelogSections.getOrNull(1)?.trim())
 
                         val sourcesJar = tasks.named<Jar>("sourcesJar")
                         additionalFiles.from(sourcesJar.get().archiveFile)

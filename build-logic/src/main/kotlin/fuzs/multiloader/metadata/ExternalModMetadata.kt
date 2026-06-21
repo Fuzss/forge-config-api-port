@@ -46,7 +46,7 @@ data class ExternalMods(val mods: MutableMap<String, ExternalModMetadata>) {
             listOf(ModLoaderProvider.NEOFORGE)
         )
         val FABRIC_API: ExternalModMetadata = ExternalModMetadata(
-            ExternalModEntry("fabric-api", "Fabric Api"),
+            ExternalModEntry("fabric-api", "Fabric API"),
             listOf(
                 DistributionEntry(LinkProvider.CURSEFORGE, "fabric-api", "306612"),
                 DistributionEntry(LinkProvider.MODRINTH, "fabric-api", "P7dR8mSH")
@@ -55,7 +55,7 @@ data class ExternalMods(val mods: MutableMap<String, ExternalModMetadata>) {
             listOf(ModLoaderProvider.FABRIC)
         )
         val FORGE_CONFIG_API_PORT: ExternalModMetadata = ExternalModMetadata(
-            ExternalModEntry("forgeconfigapiport", "Forge Config Api Port"),
+            ExternalModEntry("forgeconfigapiport", "Forge Config API Port"),
             listOf(
                 DistributionEntry(LinkProvider.CURSEFORGE, "forge-config-api-port", "547434"),
                 DistributionEntry(LinkProvider.MODRINTH, "forge-config-api-port", "ohNO6lps")
@@ -127,10 +127,10 @@ data class ExternalMods(val mods: MutableMap<String, ExternalModMetadata>) {
             listOf(ModLoaderProvider.FABRIC, ModLoaderProvider.NEOFORGE)
         )
         val TRINKETS: ExternalModMetadata = ExternalModMetadata(
-            ExternalModEntry("trinkets", "Trinkets"),
+            ExternalModEntry("trinkets_updated", "Trinkets"),
             listOf(
-                DistributionEntry(LinkProvider.CURSEFORGE, "trinkets", "341284"),
-                DistributionEntry(LinkProvider.MODRINTH, "trinkets", "5aaWibi9")
+                DistributionEntry(LinkProvider.CURSEFORGE, "trinkets-updated", "1509777"),
+                DistributionEntry(LinkProvider.MODRINTH, "trinkets-updated", "XaT8sLP6")
             ),
             EnvironmentsEntry(DependencyType.REQUIRED, DependencyType.REQUIRED),
             listOf(ModLoaderProvider.FABRIC)

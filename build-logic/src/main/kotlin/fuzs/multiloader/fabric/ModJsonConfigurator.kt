@@ -88,10 +88,10 @@ private fun FabricModJsonV1Task.addEntrypoints() {
         ?: ""
 
     // Construct fully qualified class names for main and client entrypoints.
-    addIfExists("main", "${project.group}.${project.name.lowercase()}.${packagePrefix}${archivesName}Fabric")
+    addIfExists("main", "${project.group}.${project.packageName.lowercase()}.${packagePrefix}${archivesName}Fabric")
     addIfExists(
         "client",
-        "${project.group}.${project.name.lowercase()}.${packagePrefix}client.${archivesName}FabricClient"
+        "${project.group}.${project.packageName.lowercase()}.${packagePrefix}client.${archivesName}FabricClient"
     )
 }
 

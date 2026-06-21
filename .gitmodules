@@ -1,0 +1,3 @@
+[submodule "build-logic"]
+	path = build-logic
+	url = https://github.com/Fuzss/multiloader-convention-plugins.git
