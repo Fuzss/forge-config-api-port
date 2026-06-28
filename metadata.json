@@ -13,15 +13,15 @@
     },
     "dependencies": [
         {
-            "name": "modmenu",
-            "type": "optional",
+            "name": "fabricapi",
+            "type": "required",
             "platforms": [
                 "fabric"
             ]
         },
         {
-            "name": "fabricapi",
-            "type": "required",
+            "name": "modmenu",
+            "type": "optional",
             "platforms": [
                 "fabric"
             ]
