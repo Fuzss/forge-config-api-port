@@ -1,6 +1,5 @@
 import fuzs.multiloader.extension.commonProject
 import fuzs.multiloader.extension.expectPlatform
-import fuzs.multiloader.extension.mod
 import fuzs.multiloader.metadata.ModLoaderProvider
 import org.gradle.api.internal.tasks.JvmConstants
 
@@ -51,12 +50,12 @@ tasks.named<JavaCompile>(JvmConstants.COMPILE_JAVA_TASK_NAME) {
 tasks.named<ProcessResources>(JvmConstants.PROCESS_RESOURCES_TASK_NAME) {
     dependsOn(configurations.named("commonResources"))
     from(configurations.named("commonResources")) {
-        exclude("**/*.classtweaker")
+        exclude("**/*.classtweaker", "**/*.accesswidener")
     }
 
-    dependsOn(project.commonProject.tasks.named<ProcessResources>("processResources"))
+    dependsOn(project.commonProject.tasks.named<ProcessResources>(JvmConstants.PROCESS_RESOURCES_TASK_NAME))
     from(project.commonProject.layout.buildDirectory.dir("generated/resources")) {
-        exclude("**/*.cfg")
+        exclude("**/*.classtweaker", "**/*.accesswidener", "**/*.cfg", "architectury.common.json")
     }
 }
 
