@@ -11,12 +11,18 @@
     "26.1.x": "maintained",
     "26.2.x": "primary"
   },
-  "properties": {
-    "distributions.curseforge.id": "547434",
-    "distributions.curseforge.slug": "forge-config-api-port",
-    "distributions.github.slug": "forge-config-api-port",
-    "distributions.modrinth.id": "ohNO6lps",
-    "distributions.modrinth.slug": "forge-config-api-port"
+  "distributions": {
+    "curseforge": {
+      "id": "547434",
+      "slug": "forge-config-api-port"
+    },
+    "github": {
+      "slug": "forge-config-api-port"
+    },
+    "modrinth": {
+      "id": "ohNO6lps",
+      "slug": "forge-config-api-port"
+    }
   },
   "published": true
 }
