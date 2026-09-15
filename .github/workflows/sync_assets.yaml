@@ -1,0 +1,123 @@
+name: Sync assets
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'assets/logo.png'
+      - 'assets/banner.png'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-assets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+      - name: Install oxipng
+        run: |
+          cargo install oxipng
+
+      - name: Generate assets
+        run: |
+          mkdir -p /tmp/assets
+
+          if [ -f assets/logo.png ]; then
+            convert assets/logo.png \
+              -resize 25% \
+              +dither \
+              -colors 256 \
+              -depth 8 \
+              /tmp/assets/mod_logo.png
+
+            oxipng -o 4 --strip safe /tmp/assets/mod_logo.png
+
+            cp \
+              /tmp/assets/mod_logo.png \
+              /tmp/assets/pack.png
+          fi
+
+          if [ -f assets/banner.png ]; then
+            convert assets/banner.png \
+              -resize 25% \
+              +dither \
+              -colors 256 \
+              -depth 8 \
+              /tmp/assets/mod_banner.png
+
+            oxipng -o 4 --strip safe /tmp/assets/mod_banner.png
+
+            cp assets/banner.png /tmp/assets/banner.png
+          fi
+
+      - name: Sync assets
+        run: |
+          sync_asset() {
+            local source="$1"
+            local destination="$2"
+
+            if [ -f "$source" ] && [ -f "$destination" ]; then
+              cp "$source" "$destination"
+            fi
+          }
+
+          # Fetch all branches
+          git fetch --all
+
+          # Ensure main exists locally
+          git checkout -B main origin/main
+
+          # Loop over all remote branches
+          for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin/); do
+            name="${branch#origin/}"
+
+            # Match version branches like 1.21.5 or 26.1.0
+            if [[ "$name" =~ ^[0-9]+\.[0-9]+\.([0-9]+|x)$ ]]; then
+              echo "Updating branch $name"
+
+              # Switch to version branch, create local branch if needed
+              git checkout -B "$name" "origin/$name"
+
+              if [ -f /tmp/assets/banner.png ]; then
+                cp /tmp/assets/banner.png banner.png
+              fi
+
+              sync_asset \
+                /tmp/assets/pack.png \
+                Common/src/main/resources/pack.png
+
+              sync_asset \
+                /tmp/assets/mod_logo.png \
+                Common/src/main/resources/mod_logo.png
+
+              sync_asset \
+                /tmp/assets/mod_banner.png \
+                Common/src/main/resources/mod_banner.png
+
+              # Stage and commit changes only if there are any
+              git add -A
+
+              git diff-index --quiet HEAD || {
+                git commit -m "Sync assets [skip ci]"
+                git push origin "$name"
+              }
+            fi
+          done

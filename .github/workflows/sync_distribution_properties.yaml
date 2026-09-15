@@ -1,38 +1,45 @@
-name: Sync license files
+name: Sync distribution properties
 
 on:
   push:
     branches:
       - 'main'
     paths:
-      - 'LICENS*.md'
+      - 'versions.json'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  sync-licenses:
+  sync-distribution-properties:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Sync license files
+      - name: Sync distribution properties
         run: |
           # Fetch all branches
           git fetch --all
 
           # Ensure main exists locally
           git checkout -B main origin/main
+
+          versions=$(<versions.json)
+          script=$(git show main:.github/scripts/sync_distribution_properties.py)
 
           # Loop over all remote branches
           for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin/); do
@@ -46,17 +53,12 @@ jobs:
               # Switch to version branch, create local branch if needed
               git checkout -B "$name" "origin/$name"
 
-              # Remove all known license variants first
-              # This includes 'LICENSE', 'LICENSE.md', 'LICENSING.md', 'LICENSE-ASSETS.md', etc.
-              rm -f LICENS*
-
-              # Copy all license files from main into this branch
-              git checkout main -- 'LICENS*'
+              printf '%s\n' "$script" | python3 - "$versions"
 
               # Stage and commit changes only if there are any
-              git add -A 'LICENS*'
-              git diff-index --quiet HEAD || {
-                git commit -m "Sync license files [skip ci]"
+              git add gradle.properties
+              git diff --cached --quiet || {
+                git commit -m "Sync distribution properties from versions.json [skip ci]"
                 git push origin "$name"
               }
             fi
