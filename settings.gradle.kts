@@ -35,5 +35,6 @@ pluginManagement {
 }
 
 plugins {
+    // git submodule update --init --remote --recursive
     id("fuzs.multiloader.multiloader-convention-plugins-settings")
 }
