@@ -37,4 +37,5 @@ pluginManagement {
 plugins {
     // git submodule update --init --remote --recursive
     id("fuzs.multiloader.multiloader-convention-plugins-settings")
+//    id("fuzs.multiloader.multiloader-convention-plugins-settings") version providers.gradleProperty("project.plugins")
 }
