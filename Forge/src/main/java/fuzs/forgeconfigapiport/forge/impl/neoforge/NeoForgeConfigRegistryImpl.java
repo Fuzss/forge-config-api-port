@@ -25,7 +25,7 @@ public final class NeoForgeConfigRegistryImpl implements NeoForgeConfigRegistry 
                     modContainer.getModId());
         } else {
             ModConfig modConfig = new ModConfig(type,
-                    new NeoForgeConfigSpecAdapter(modContainer.getModId(), (ModConfigSpec) spec),
+                    new NeoForgeConfigAdapter(modContainer.getModId(), (ModConfigSpec) spec),
                     modContainer);
             modContainer.addConfig(modConfig);
         }
@@ -48,7 +48,7 @@ public final class NeoForgeConfigRegistryImpl implements NeoForgeConfigRegistry 
                     fileName);
         } else {
             ModConfig modConfig = new ModConfig(type,
-                    new NeoForgeConfigSpecAdapter(modContainer.getModId(), (ModConfigSpec) spec),
+                    new NeoForgeConfigAdapter(modContainer.getModId(), (ModConfigSpec) spec),
                     modContainer,
                     fileName);
             modContainer.addConfig(modConfig);

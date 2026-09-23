@@ -55,7 +55,7 @@ public class ConfigTracker {
     public static final ConfigTracker INSTANCE = new ConfigTracker();
     static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final Path defaultConfigPath = fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getDefaultConfigsDirectory();
+    private static final Path defaultConfigPath = fuzs.forgeconfigapiport.fabric.impl.config.CommonConfig.getDefaultConfigsDirectory();
 
     final ConcurrentHashMap<String, ModConfig> fileMap = new ConcurrentHashMap<>();
     final EnumMap<ModConfig.Type, Set<ModConfig>> configSets = new EnumMap<>(ModConfig.Type.class);
@@ -86,7 +86,7 @@ public class ConfigTracker {
     public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, ModContainer container, String fileName) {
         var lock = locksByMod.computeIfAbsent(container.getMetadata().getId(), m -> new ReentrantLock());
         var modConfig = new ModConfig(type, spec, container, fileName, lock);
-        fuzs.forgeconfigapiport.fabric.impl.config.ModConfigSpecValidator.validateSpec(spec, modConfig);
+        fuzs.forgeconfigapiport.fabric.impl.config.SpecValidator.validateSpec(spec, modConfig);
 
         trackConfig(modConfig);
 
@@ -139,7 +139,7 @@ public class ConfigTracker {
         loadConfig(config, configPath, fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onLoading);
         LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
 
-        if (!fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues.DISABLE_CONFIG_WATCHER)) {
+        if (!fuzs.forgeconfigapiport.fabric.impl.config.CommonConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.CommonConfig.ConfigValue.DISABLE_CONFIG_WATCHER)) {
             FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(config, configPath, Thread.currentThread().getContextClassLoader()));
             LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
         }
@@ -237,7 +237,7 @@ public class ConfigTracker {
     }
 
     private static void unload(Path path) {
-        if (fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues.DISABLE_CONFIG_WATCHER))
+        if (fuzs.forgeconfigapiport.fabric.impl.config.CommonConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.CommonConfig.ConfigValue.DISABLE_CONFIG_WATCHER))
             return;
         try {
             FileWatcher.defaultInstance().removeWatch(path);

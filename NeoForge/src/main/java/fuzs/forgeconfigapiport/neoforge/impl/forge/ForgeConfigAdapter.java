@@ -12,7 +12,7 @@ import java.nio.file.Path;
 /**
  * A bridge for NeoForge's and Forge's config specs.
  */
-public record ForgeConfigSpecAdapter(IConfigSpec<?> spec) implements net.neoforged.fml.config.IConfigSpec {
+public record ForgeConfigAdapter(IConfigSpec<?> spec) implements net.neoforged.fml.config.IConfigSpec {
 
     @Override
     public boolean isEmpty() {

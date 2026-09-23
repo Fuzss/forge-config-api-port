@@ -235,7 +235,8 @@ A few substitutions recur across the vendored Fabric config classes:
   vendored too; their loader-only bits live in Fabric helpers outside the mirror:
   `fuzs.forgeconfigapiport.fabric.impl.network.FriendlyByteBufHelper` (`UNBOUNDED_BYTE_ARRAY`, from
   `NeoForgeStreamCodecs`) and `...ConfigSyncHelper` (`handleClientLoginSuccess`, which has no NeoForge counterpart).
-- `ForgeConfigApiPortConfig` supplies config values that NeoForge reads from `FMLConfig`.
+- `CommonConfig` mirrors `FMLConfig` (nested `ConfigValue<T>`, same entry names, ordered `ConfigSpec`), but
+  reads through Fabric paths and the bundled `forgeconfigapiport.toml`.
 
 ## Rules of thumb
 

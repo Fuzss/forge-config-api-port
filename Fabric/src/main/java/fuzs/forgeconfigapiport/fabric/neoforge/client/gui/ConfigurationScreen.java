@@ -159,7 +159,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         public void finish() {
-            if (fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues.LOG_UNTRANSLATED_CONFIGURATION_WARNINGS) && fuzs.forgeconfigapiport.impl.services.CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
+            if (fuzs.forgeconfigapiport.fabric.impl.config.CommonConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.CommonConfig.ConfigValue.LOG_UNTRANSLATED_CONFIGURATION_WARNINGS) && fuzs.forgeconfigapiport.impl.services.CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("""
                         \n	Dev warning - Untranslated configuration keys encountered. Please translate your configuration keys so users can properly configure your mod.

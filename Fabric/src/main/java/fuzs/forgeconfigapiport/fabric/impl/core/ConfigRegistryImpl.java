@@ -40,11 +40,11 @@ public final class ConfigRegistryImpl implements ConfigRegistry {
 
     @Override
     public void register(String modId, ModConfig.Type type, net.minecraftforge.fml.config.IConfigSpec<?> spec) {
-        this.register(modId, type, new ForgeConfigSpecAdapter(spec));
+        this.register(modId, type, new ForgeConfigAdapter(spec));
     }
 
     @Override
     public void register(String modId, ModConfig.Type type, net.minecraftforge.fml.config.IConfigSpec<?> spec, String fileName) {
-        this.register(modId, type, new ForgeConfigSpecAdapter(spec), fileName);
+        this.register(modId, type, new ForgeConfigAdapter(spec), fileName);
     }
 }

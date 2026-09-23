@@ -16,7 +16,7 @@ public final class ForgeConfigRegistryImpl implements ForgeConfigRegistry {
 
     @Override
     public void register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec) {
-        modContainer.registerConfig(type, new ForgeConfigSpecAdapter(spec));
+        modContainer.registerConfig(type, new ForgeConfigAdapter(spec));
     }
 
     @Override
@@ -27,7 +27,7 @@ public final class ForgeConfigRegistryImpl implements ForgeConfigRegistry {
 
     @Override
     public void register(ModContainer modContainer, ModConfig.Type type, IConfigSpec<?> spec, String fileName) {
-        modContainer.registerConfig(type, new ForgeConfigSpecAdapter(spec), fileName);
+        modContainer.registerConfig(type, new ForgeConfigAdapter(spec), fileName);
     }
 
     private ModContainer getModContainer(String modId) {

@@ -23,13 +23,13 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * A bridge for NeoForge's and Forge's config specs.
  */
-public final class NeoForgeConfigSpecAdapter extends UnmodifiableConfigWrapper<UnmodifiableConfig> implements net.minecraftforge.fml.config.IConfigSpec<NeoForgeConfigSpecAdapter> {
+public final class NeoForgeConfigAdapter extends UnmodifiableConfigWrapper<UnmodifiableConfig> implements net.minecraftforge.fml.config.IConfigSpec<NeoForgeConfigAdapter> {
     private static final Map<String, ReentrantLock> LOCKS_BY_MOD = new ConcurrentHashMap<>();
 
     private final ModConfigSpec spec;
     private final ReentrantLock lock;
 
-    public NeoForgeConfigSpecAdapter(String modId, ModConfigSpec spec) {
+    public NeoForgeConfigAdapter(String modId, ModConfigSpec spec) {
         super(spec.getSpec());
         this.spec = spec;
         this.lock = LOCKS_BY_MOD.computeIfAbsent(modId, $ -> new ReentrantLock());

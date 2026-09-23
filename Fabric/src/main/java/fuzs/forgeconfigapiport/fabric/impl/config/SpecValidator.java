@@ -11,8 +11,8 @@ import java.util.function.Consumer;
  * Fabric-side home for the spec validation that {@code ModConfigSpec} cannot perform on the common module (it has no
  * access to {@link ModConfig}).
  */
-public final class ModConfigSpecValidator {
-    private ModConfigSpecValidator() {
+public final class SpecValidator {
+    private SpecValidator() {
         // NO-OP
     }
 
