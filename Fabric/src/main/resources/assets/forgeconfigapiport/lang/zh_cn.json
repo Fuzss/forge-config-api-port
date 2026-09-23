@@ -1,7 +1,5 @@
 {
   "modmenu.descriptionTranslation.forgeconfigapiport": "NeoForge 和 Forge 的配置系统被提供给其他模组生态系统。专为多加载器架构设计。",
-  "commands.config.getwithtype": "在 %s 处找到了类型为 %s 的 %s 配置",
-  "commands.config.noconfig": "未找到类型为 %s 的 %s 配置",
 
   "neoforge.configuration.uitext.title": "%s 配置",
   "neoforge.configuration.uitext.type.client": "客户端配置",

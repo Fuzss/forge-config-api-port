@@ -1,6 +1,4 @@
 {
   "modmenu.descriptionTranslation.forgeconfigapiport": "Fabric экосистемасы тарафыннан хуплана торган Forge-ның бөтен көйләүләр системасы. Мультийөкләүченең архитектурасы өчен эшкәртелде.",
-  "modmenu.summaryTranslation.forgeconfigapiport": "Fabric экосистемасында Forge модларыныңны хуплау.",
-  "commands.config.getwithtype": "%2$s төренең %1$s өчен көйләү %3$s урынына табылды",
-  "commands.config.noconfig": "%2$s төренең %1$s өчен %3$s көйләү табылмады"
+  "modmenu.summaryTranslation.forgeconfigapiport": "Fabric экосистемасында Forge модларыныңны хуплау."
 }

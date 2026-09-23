@@ -1,7 +1,4 @@
 {
-  "commands.config.getwithtype": "Config for %s of type %s found at %s",
-  "commands.config.noconfig": "Config for %s of type %s not found",
-
   "neoforge.configuration.uitext.title": "%s Configuration",
   "neoforge.configuration.uitext.type.client": "Client Settings",
   "neoforge.configuration.uitext.type.server": "Server Settings",

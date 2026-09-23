@@ -1,5 +1,3 @@
 {
-  "commands.forge.arguments.enum.invalid": "Константа Enum має бути однією з %s, знайдено %s",
-  "commands.config.getwithtype": "Знайдено конфігурації для %s типу %s в %s",
-  "commands.config.noconfig": "Конфігурацію для %s типу %s не знайдено"
+  "commands.forge.arguments.enum.invalid": "Константа Enum має бути однією з %s, знайдено %s"
 }

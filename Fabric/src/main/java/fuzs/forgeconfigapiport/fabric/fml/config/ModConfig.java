@@ -12,7 +12,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.util.StringRepresentable;
 import net.neoforged.fml.config.IConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,7 +84,7 @@ public final class ModConfig {
         }
     }
 
-    public enum Type implements StringRepresentable {
+    public enum Type {
         /**
          * Common mod config for configuration that needs to be loaded on both environments.
          * Loaded on both servers and clients.
@@ -123,11 +122,6 @@ public final class ModConfig {
 
         public String extension() {
             return name().toLowerCase(Locale.ROOT);
-        }
-
-        @Override
-        public String getSerializedName() {
-            return name();
         }
     }
 }

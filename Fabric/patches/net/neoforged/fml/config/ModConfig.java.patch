@@ -1,6 +1,6 @@
 --- a/net/neoforged/fml/config/ModConfig.java
 +++ b/net/neoforged/fml/config/ModConfig.java
-@@ -7,12 +7,13 @@
+@@ -7,12 +7,12 @@
  
  import com.electronwill.nightconfig.core.CommentedConfig;
  import java.nio.file.Path;
@@ -13,12 +13,11 @@
 -import net.neoforged.fml.loading.StringUtils;
 +import java.util.function.Consumer;
 +import net.fabricmc.loader.api.ModContainer;
-+import net.minecraft.util.StringRepresentable;
 +import net.neoforged.fml.config.IConfigSpec;
  import org.jetbrains.annotations.Nullable;
  
  public final class ModConfig {
-@@ -49,7 +50,7 @@
+@@ -49,7 +49,7 @@
      }
  
      public String getModId() {
@@ -27,7 +26,7 @@
      }
  
      /**
-@@ -72,19 +73,19 @@
+@@ -72,13 +72,13 @@
          return loadedConfig != null ? loadedConfig.path() : null;
      }
  
@@ -43,24 +42,12 @@
          } finally {
              lock.unlock();
          }
-     }
- 
--    public enum Type {
-+    public enum Type implements StringRepresentable {
-         /**
-          * Common mod config for configuration that needs to be loaded on both environments.
-          * Loaded on both servers and clients.
-@@ -121,7 +122,12 @@
+@@ -121,7 +121,7 @@
          STARTUP;
  
          public String extension() {
 -            return StringUtils.toLowerCase(name());
 +            return name().toLowerCase(Locale.ROOT);
          }
-+
-+        @Override
-+        public String getSerializedName() {
-+            return name();
-+        }
      }
  }
