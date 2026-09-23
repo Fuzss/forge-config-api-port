@@ -7,8 +7,10 @@ import net.neoforged.fml.config.ModConfig;
 /**
  * Registry for adding your configs.
  * <p>
- * Note that opposed to NeoForge / Forge, configs are loaded and usable immediately after registration due to the lack of mod
- * loading stages on Fabric.
+ * Note that opposed to NeoForge / Forge, configs are loaded and usable immediately after registration due to the lack
+ * of mod loading stages on Fabric.
+ * <p>
+ * TODO Bump to v6 of the API when the NeoForge classes are moved to a separate Fabric-specific package.
  */
 public interface ConfigRegistry {
     ConfigRegistry INSTANCE = new ConfigRegistryImpl();

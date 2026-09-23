@@ -49,7 +49,7 @@ public final class ModConfig {
     }
 
     public String getModId() {
-        return this.container.getMetadata().getId();
+        return container.getMetadata().getId();
     }
 
     /**
@@ -121,12 +121,12 @@ public final class ModConfig {
         STARTUP;
 
         public String extension() {
-            return this.name().toLowerCase(Locale.ROOT);
+            return name().toLowerCase(Locale.ROOT);
         }
 
         @Override
         public String getSerializedName() {
-            return this.name();
+            return name();
         }
     }
 }

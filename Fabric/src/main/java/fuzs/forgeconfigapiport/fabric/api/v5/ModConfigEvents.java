@@ -8,6 +8,8 @@ import java.util.Objects;
 
 /**
  * Mod config events adapted for Fabric's callback event style.
+ * <p>
+ * TODO Bump to v6 of the API when the NeoForge classes are moved to a separate Fabric-specific package.
  */
 public final class ModConfigEvents {
 

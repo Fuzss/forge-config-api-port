@@ -22,7 +22,7 @@
  
      public String getModId() {
 -        return container.getModId();
-+        return this.container.getMetadata().getId();
++        return container.getMetadata().getId();
      }
  
      /**
@@ -54,12 +54,12 @@
  
          public String extension() {
 -            return StringUtils.toLowerCase(name());
-+            return this.name().toLowerCase(Locale.ROOT);
++            return name().toLowerCase(Locale.ROOT);
          }
 +
 +        @Override
 +        public String getSerializedName() {
-+            return this.name();
++            return name();
 +        }
      }
  }

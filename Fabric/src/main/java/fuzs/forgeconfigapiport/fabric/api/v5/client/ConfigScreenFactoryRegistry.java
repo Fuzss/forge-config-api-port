@@ -10,14 +10,25 @@ import java.util.function.BiFunction;
  * href="https://github.com/TerraformersMC/ModMenu">Mod Menu</a> mod (if present). The screen will be accessible from
  * the mod list in-game.
  * <p>
- * Generally this should be used to enable NeoForge's built-in config screen from
+ * Generally, this should be used to enable NeoForge's built-in config screen from
  * {@link net.neoforged.neoforge.client.gui.ConfigurationScreen}, which can optionally be extended.
  * <p>
  * Please note that the NeoForge screen is only compatible with {@link net.neoforged.neoforge.common.ModConfigSpec}, no
  * other {@link net.neoforged.fml.config.IConfigSpec} implementation is supported.
+ * <p>
+ * TODO The factory should become BiFunction<ModContainer, Screen, Screen> when the API is bumped to v6.
  */
 public interface ConfigScreenFactoryRegistry {
     ConfigScreenFactoryRegistry INSTANCE = new ConfigScreenFactoryRegistryImpl();
+
+    /**
+     * Registers a config screen factory for your mod.
+     * <p>
+     * This will use the default {@link net.neoforged.neoforge.client.gui.ConfigurationScreen}.
+     *
+     * @param modId the id of your mod
+     */
+    void register(String modId);
 
     /**
      * Registers a config screen factory for your mod.

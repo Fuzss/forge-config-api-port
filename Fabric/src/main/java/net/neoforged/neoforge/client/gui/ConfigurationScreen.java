@@ -60,6 +60,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.config.ModConfig.Type;
@@ -253,6 +254,21 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     // If there is only one config type (and it can be edited, we show that instantly on the way "down" and want to close on the way "up".
     // But when returning from the restart/reload confirmation screens, we need to stay open.
     private boolean autoClose = false;
+
+    @Deprecated
+    public ConfigurationScreen(final String mod, final Screen parent) {
+        this(FabricLoader.getInstance().getModContainer(mod).orElseThrow(), parent);
+    }
+
+    @Deprecated
+    public ConfigurationScreen(final String mod, final Screen parent, ConfigurationSectionScreen.Filter filter) {
+        this(FabricLoader.getInstance().getModContainer(mod).orElseThrow(), parent, filter);
+    }
+
+    @Deprecated
+    public ConfigurationScreen(final String mod, final Screen parent, Function4<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen) {
+        this(FabricLoader.getInstance().getModContainer(mod).orElseThrow(), parent, sectionScreen);
+    }
 
     public ConfigurationScreen(final ModContainer mod, final Screen parent) {
         this(mod, parent, ConfigurationSectionScreen::new);
