@@ -1,0 +1,12 @@
+# Vendored upstream source manifest.
+#
+# Format:
+#   generated <source> <path>   fetched, patched (patches/<path>.patch when present), relocated, written
+#   owned     <source> <path>   hand-maintained; upstream only fetched to report drift
+#   local     <path>            hand-maintained; no upstream counterpart
+#
+# <path> is the full package path of the upstream file, mirrored under patches/.
+
+owned neoforge net/neoforged/neoforge/common/ModConfigSpec.java
+owned neoforge net/neoforged/neoforge/common/TranslatableEnum.java
+owned fml net/neoforged/fml/config/IConfigSpec.java

@@ -1,0 +1,197 @@
+# Vendored source patches
+
+This directory is the source of truth for the upstream loader classes that the `Common-NeoForgeApi` module vendors. It
+lets them be regenerated from upstream by applying small, reviewable patches instead of maintaining copies by
+hand.
+
+Everything is operated through two Gradle tasks. You need only the Gradle wrapper, a `patch` binary
+(macOS/Linux provide one), and network access to resolve the sources jars (cached after the first run).
+
+## Pipeline overview
+
+```
+   net.neoforged:neoforge:<version>:sources             (package root net.neoforged.neoforge)
+   net.neoforged.fancymodloader:loader:<version>:sources (package root net.neoforged.fml)
+                          |
+                          v
+                  extract into build/vendored-sources/upstream/<source>/
+                          |
+            manifest entry? | apply patches/<full/path>.patch (if present)
+                          v
+                (no relocation: the package is kept as-is)
+                          v
+   src/main/java/<full/path>   (committed)
+```
+
+1. Each configured source jar is extracted to a scratch directory.
+2. Each `generated` file listed in `manifest` is copied from the extracted upstream, its patch (if any) is
+   applied with `patch -p1`, and then written out. This module keeps the original package (no relocation).
+3. The result is written into the module source tree; commit it like any other generated file.
+4. `checkVendoredSources` performs the same steps into a scratch directory and fails if the committed sources
+   differ.
+
+## Files in this directory
+
+- `manifest` — lists every vendored file and how it is handled. **Source of truth.**
+- `lock` — records the pinned source versions and the upstream hashes of `owned` files. Generated; do not edit
+  by hand.
+- `<full/path>.patch` — a unified diff for one file, stored at the file's **full package path** (mirroring
+  upstream), e.g. `net/neoforged/fml/config/ModConfigs.java.patch`.
+
+## Gradle tasks
+
+Run from the repository root.
+
+```sh
+# Regenerate the vendored sources and refresh the lock file.
+./gradlew :Common-NeoForgeApi:syncVendoredSources
+
+# Verify the committed sources match a fresh sync (also runs as part of `check`/`build`).
+./gradlew :Common-NeoForgeApi:checkVendoredSources
+
+# Full build (compiles, runs checkVendoredSources, Spotless, jars).
+./gradlew :Common-NeoForgeApi:build
+```
+
+`syncVendoredSources` prints one line per manifest entry, tagged `[patched]`, `[verbatim]`, `[unchanged]` or
+`[changed]`, plus a summary. Add `--info` to also see the raw `patch` output for each patched file.
+
+`checkVendoredSources` is quiet on success (`Vendored sources are in sync.`). On failure it lists every problem
+and tells you to run the sync task.
+
+Scratch output (safe to delete, not committed):
+
+- `build/vendored-sources/upstream/<source>/<full/path>` — pristine extracted upstream (use this when authoring
+  patches).
+- `build/vendored-sources/staging/<full/path>` — upstream with the patch applied.
+- `build/vendored-sources/owned-upstream/<full/path>` — copy of an `owned` file's upstream counterpart, written
+  when it changes so you can review it.
+
+## Configuration
+
+The sync is configured in `build.gradle.kts` as a list of `SourceSpec`s passed to the tasks:
+
+```kotlin
+SourceSpec(
+    name = "neoforge",                       // referenced by manifest entries
+    version = neoforgeVendoredVersion,       // recorded in lock
+    packageRoot = "net.neoforged.neoforge",  // dot-form upstream package root
+    relocateTo = null,                       // null keeps the original package
+    sourcesJar = neoforgeVendoredSources.singleFile,
+)
+```
+
+Two sources are configured: `neoforge` (`net.neoforged.neoforge`) and `fml`
+(`net.neoforged.fml`, from the FancyModLoader `loader` sources artifact). Versions come from the shared
+catalog (`neoforge.version`) and this project's catalog (`fancymodloader`).
+
+## `manifest` format
+
+One entry per line; `#` starts a comment; blank lines are ignored. Whitespace-separated.
+
+```
+<mode> <source> <path>     # generated and owned
+local <path>               # local (no upstream counterpart)
+```
+
+- `<source>` — the `SourceSpec.name` the file comes from.
+- `<path>` — the **full package path** of the upstream file, e.g.
+  `net/neoforged/fml/config/ModConfigs.java`.
+
+Modes:
+
+- **`generated`** — fetched from upstream, patch applied if `patches/<path>.patch` exists, then written to the
+  source tree. Never edit these files by hand; edit the patch instead.
+- **`owned`** — a hand-maintained file that has an upstream counterpart. The sync never writes it; it only
+  fetches upstream to report drift (its hash is recorded in `lock`).
+- **`local`** — a hand-maintained file with no upstream counterpart. Ignored by the sync.
+
+## `lock` format
+
+```
+version.<source>=<version>            # pinned upstream version per source
+<full/path>=<sha256>                  # upstream hash of each `owned` file
+```
+
+Generated by `syncVendoredSources`. It must be committed. `checkVendoredSources` fails if it is missing, if a
+source's version changed, or if an `owned` file's upstream hash changed.
+
+## Authoring and editing patches
+
+Patches are plain unified diffs applied with `patch -p1`, so the labels must be `a/<full/path>` and
+`b/<full/path>`. Always author them against **pristine upstream**, never against the copied file.
+
+1. Populate the upstream sources (any sync run does this):
+
+   ```sh
+   ./gradlew :Common-NeoForgeApi:syncVendoredSources
+   ```
+
+2. Copy the pristine upstream file to a scratch location (keep the upstream copy untouched):
+
+   ```sh
+   P=net/neoforged/fml/config/ModConfigs.java
+   cp "build/vendored-sources/upstream/fml/$P" /tmp/ModConfigs.java
+   ```
+
+3. If a patch already exists, apply it to the scratch copy so you start from the current edits instead of
+   reproducing them by hand:
+
+   ```sh
+   patch /tmp/ModConfigs.java "patches/$P.patch"
+   ```
+
+   `patch` prints `patching file ...` and exits `0` on success. This is the same operation the sync performs.
+   It fails when the upstream file changed since the patch was written; in that case `patch` writes a `.rej`
+   file with the rejected hunks next to the scratch copy. Apply those hunks manually, or fall back to editing
+   the pristine file.
+
+4. Edit the scratch copy.
+
+5. Produce the patch with matching labels and place it at the full package path:
+
+   ```sh
+   mkdir -p "patches/$(dirname "$P")"
+   diff -u --label "a/$P" --label "b/$P"      "build/vendored-sources/upstream/fml/$P" /tmp/ModConfigs.java      > "patches/$P.patch"
+   ```
+
+6. Regenerate and validate:
+
+   ```sh
+   ./gradlew :Common-NeoForgeApi:syncVendoredSources :Common-NeoForgeApi:checkVendoredSources
+   ```
+
+### Patch conventions
+
+Keep patches minimal and stable; they are re-applied on every upstream update, so small diffs conflict less:
+
+- **Do not add imports.** Reference relocated or helper types fully-qualified instead. This keeps the patch out
+  of the import block, which changes frequently upstream.
+- **Do not make javadoc/comment-only changes.** Dangling `@link`/`@value` warnings are acceptable.
+- Only **remove** imports for types that do not exist on the target platform.
+- **Prefer adding a method or class over patching a call site.** Adding is more stable than patching.
+- A patch must not contain a package rename; this module keeps the original packages.
+
+## Common operations
+
+### Add a new vendored file
+
+1. Add a `generated <source> <full/path>` line to `manifest` (or `owned`/`local`).
+2. Optionally author a patch (see above).
+3. Run `./gradlew :Common-NeoForgeApi:syncVendoredSources :Common-NeoForgeApi:checkVendoredSources`.
+
+### Update the upstream version
+
+1. Bump the version in the version catalog (`neoforge.version` in the shared catalog, or `fancymodloader` in
+   `gradle/libs.versions.toml`).
+2. `./gradlew :Common-NeoForgeApi:syncVendoredSources`
+3. If a patch no longer applies, the task aborts and prints the raw `patch` output; re-author the patch
+   against the new upstream. `[changed]` owned files must be reviewed in
+   `build/vendored-sources/owned-upstream/<path>`.
+4. `./gradlew :Common-NeoForgeApi:build`
+
+## Rules of thumb
+
+- `patches/` is the source of truth; the vendored files under `src/main/java/` are generated. Never edit them by
+  hand — edit the patch and run `syncVendoredSources`.
+- Always commit the regenerated sources, `manifest`, `lock` and any patch changes together.

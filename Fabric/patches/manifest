@@ -1,0 +1,15 @@
+# Vendored upstream source manifest.
+#
+# Format:
+#   generated <source> <path>   fetched, patched (patches/<path>.patch when present), relocated, written
+#   owned     <source> <path>   hand-maintained; upstream only fetched to report drift
+#   local     <path>            hand-maintained; no upstream counterpart
+#
+# <path> is the full package path of the upstream file, mirrored under patches/.
+
+owned fml net/neoforged/fml/config/ConfigTracker.java
+owned fml net/neoforged/fml/config/ConfigWatcher.java
+owned fml net/neoforged/fml/config/LoadedConfig.java
+owned fml net/neoforged/fml/config/ModConfig.java
+owned fml net/neoforged/fml/config/ModConfigs.java
+owned neoforge net/neoforged/neoforge/client/gui/ConfigurationScreen.java

@@ -1,7 +1,12 @@
 [versions]
 
-forge-gradle = "7.0.40"
+fancymodloader = "12.0.0"
+forgegradle = "7.0.40"
+
+[libraries]
+
+fancymodloader = { group = "net.neoforged.fancymodloader", name = "loader", version.ref = "fancymodloader" }
 
 [plugins]
 
-forge-gradle = { id = "net.minecraftforge.gradle", version.ref = "forge-gradle" }
+forgegradle = { id = "net.minecraftforge.gradle", version.ref = "forgegradle" }

@@ -13,7 +13,7 @@ import org.gradle.api.internal.tasks.JvmConstants
 
 plugins {
     id("fuzs.multiloader.multiloader-convention-plugins-platform")
-    alias(libs.plugins.forge.gradle)
+    alias(libs.plugins.forgegradle)
 }
 
 project.expectPlatform(ModLoaderProvider.FORGE)
