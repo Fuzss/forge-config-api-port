@@ -5,7 +5,7 @@
 
 package fuzs.forgeconfigapiport.fabric.impl.network;
 
-import fuzs.forgeconfigapiport.fabric.api.v5.ModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.api.v6.ModConfigEvents;
 import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;

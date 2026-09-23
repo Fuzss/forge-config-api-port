@@ -2,7 +2,7 @@ package fuzs.forgeconfigapiport.fabric.impl.integration.modmenu;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import fuzs.forgeconfigapiport.fabric.api.v5.client.ConfigScreenFactoryRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v6.client.ConfigScreenFactoryRegistry;
 import fuzs.forgeconfigapiport.fabric.impl.client.core.ConfigScreenFactoryRegistryImpl;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;

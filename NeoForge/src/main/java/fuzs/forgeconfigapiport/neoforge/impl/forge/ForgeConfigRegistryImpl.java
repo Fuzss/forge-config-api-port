@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.neoforge.impl.forge;
 
-import fuzs.forgeconfigapiport.neoforge.api.v5.ForgeConfigRegistry;
+import fuzs.forgeconfigapiport.neoforge.api.v6.ForgeConfigRegistry;
 import net.minecraftforge.fml.config.IConfigSpec;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;

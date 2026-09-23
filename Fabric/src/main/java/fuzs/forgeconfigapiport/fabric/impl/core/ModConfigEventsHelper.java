@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.fabric.impl.core;
 
-import fuzs.forgeconfigapiport.fabric.api.v5.ModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.api.v6.ModConfigEvents;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.neoforged.fml.config.ModConfig;

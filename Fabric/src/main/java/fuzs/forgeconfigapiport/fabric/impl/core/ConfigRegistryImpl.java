@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.fabric.impl.core;
 
-import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v6.ConfigRegistry;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.fabricmc.loader.api.FabricLoader;
 import net.neoforged.fml.config.ConfigTracker;

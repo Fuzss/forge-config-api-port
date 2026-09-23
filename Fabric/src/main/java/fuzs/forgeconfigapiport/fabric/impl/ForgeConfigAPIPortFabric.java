@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.fabric.impl;
 
-import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v6.ConfigRegistry;
 import fuzs.forgeconfigapiport.fabric.impl.handler.ServerLifecycleHandler;
 import fuzs.forgeconfigapiport.fabric.impl.network.ConfigSync;
 import fuzs.forgeconfigapiport.fabric.impl.network.configuration.SyncConfig;

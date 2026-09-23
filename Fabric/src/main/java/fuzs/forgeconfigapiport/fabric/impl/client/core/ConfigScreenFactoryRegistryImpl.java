@@ -1,6 +1,8 @@
 package fuzs.forgeconfigapiport.fabric.impl.client.core;
 
-import fuzs.forgeconfigapiport.fabric.api.v5.client.ConfigScreenFactoryRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v6.client.ConfigScreenFactoryRegistry;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 
@@ -20,8 +22,9 @@ public final class ConfigScreenFactoryRegistryImpl implements ConfigScreenFactor
     }
 
     @Override
-    public void register(String modId, BiFunction<String, Screen, Screen> factory) {
-        this.factories.put(modId, (Screen screen) -> factory.apply(modId, screen));
+    public void register(String modId, BiFunction<ModContainer, Screen, Screen> factory) {
+        ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElseThrow();
+        this.factories.put(modId, (Screen screen) -> factory.apply(container, screen));
     }
 
     public <T> Map<String, T> getConfigScreenFactories(Function<UnaryOperator<Screen>, T> converter) {

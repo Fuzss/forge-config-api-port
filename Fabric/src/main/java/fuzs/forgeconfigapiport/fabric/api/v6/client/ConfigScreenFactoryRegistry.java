@@ -1,6 +1,7 @@
-package fuzs.forgeconfigapiport.fabric.api.v5.client;
+package fuzs.forgeconfigapiport.fabric.api.v6.client;
 
 import fuzs.forgeconfigapiport.fabric.impl.client.core.ConfigScreenFactoryRegistryImpl;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.gui.screens.Screen;
 
 import java.util.function.BiFunction;
@@ -15,8 +16,6 @@ import java.util.function.BiFunction;
  * <p>
  * Please note that the NeoForge screen is only compatible with {@link net.neoforged.neoforge.common.ModConfigSpec}, no
  * other {@link net.neoforged.fml.config.IConfigSpec} implementation is supported.
- * <p>
- * TODO The factory should become BiFunction<ModContainer, Screen, Screen> when the API is bumped to v6.
  */
 public interface ConfigScreenFactoryRegistry {
     ConfigScreenFactoryRegistry INSTANCE = new ConfigScreenFactoryRegistryImpl();
@@ -34,8 +33,8 @@ public interface ConfigScreenFactoryRegistry {
      * Registers a config screen factory for your mod.
      *
      * @param modId   the id of your mod
-     * @param factory the config screen factory, incoming parameters are your mod id and the last screen (the mod list
-     *                screen)
+     * @param factory the config screen factory, incoming parameters are your mod container and the previous screen (the
+     *                mod list screen)
      */
-    void register(String modId, BiFunction<String, Screen, Screen> factory);
+    void register(String modId, BiFunction<ModContainer, Screen, Screen> factory);
 }

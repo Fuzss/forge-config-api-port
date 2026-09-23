@@ -1,6 +1,6 @@
 package fuzs.forgeconfigapiport.forge.impl;
 
-import fuzs.forgeconfigapiport.forge.api.v5.NeoForgeConfigRegistry;
+import fuzs.forgeconfigapiport.forge.api.v6.NeoForgeConfigRegistry;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import net.minecraftforge.common.ForgeConfigSpec;

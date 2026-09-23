@@ -119,7 +119,6 @@ A new patch is created by diffing a pristine upstream copy against your edited c
   `syncVendoredSources`.
 - Do not commit generated output by hand — always let `syncVendoredSources` write it, then run
   `checkVendoredSources`.
-- Keep the `@Deprecated` `String`-based `ConfigurationScreen` constructors overloads alongside the
-  `ModContainer` ones so the original API surface stays available.
+- `ConfigurationScreen` only has the `ModContainer` constructors on this branch (26.4.x); the `String` overloads were removed as an accepted major-version break. See the `ConfigScreenFactoryRegistry` v6 TODO before changing the config-screen factory API.
 - `ConfigRegistry` (`fuzs...fabric.api.v5`) is the public entry point and still takes a mod id; the
   `ModContainer` change is internal to the vendored classes.

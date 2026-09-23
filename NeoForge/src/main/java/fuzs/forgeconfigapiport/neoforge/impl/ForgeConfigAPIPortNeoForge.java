@@ -2,7 +2,7 @@ package fuzs.forgeconfigapiport.neoforge.impl;
 
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
-import fuzs.forgeconfigapiport.neoforge.api.v5.ForgeConfigRegistry;
+import fuzs.forgeconfigapiport.neoforge.api.v6.ForgeConfigRegistry;
 import net.minecraft.DetectedVersion;
 import net.minecraft.data.metadata.PackMetadataGenerator;
 import net.minecraft.network.chat.Component;

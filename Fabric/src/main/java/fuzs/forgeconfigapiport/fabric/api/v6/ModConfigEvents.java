@@ -1,4 +1,4 @@
-package fuzs.forgeconfigapiport.fabric.api.v5;
+package fuzs.forgeconfigapiport.fabric.api.v6;
 
 import fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper;
 import net.fabricmc.fabric.api.event.Event;
@@ -8,8 +8,6 @@ import java.util.Objects;
 
 /**
  * Mod config events adapted for Fabric's callback event style.
- * <p>
- * TODO Bump to v6 of the API when the NeoForge classes are moved to a separate Fabric-specific package.
  */
 public final class ModConfigEvents {
 
