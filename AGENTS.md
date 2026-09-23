@@ -105,12 +105,12 @@ Patches are authored against pristine upstream and stored at the full upstream p
 - **Prefer adding methods/classes over patching upstream call sites.** Adding is more stable. Existing examples:
   - `fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper` replaces NeoForge's `ModConfigEvent`
     event-bus dispatch.
-  - `fuzs.forgeconfigapiport.fabric.impl.config.ModConfigSpecValidator` hosts the spec validation that
+  - `fuzs.forgeconfigapiport.fabric.impl.config.SpecValidator` hosts the spec validation that
     `ModConfigSpec` cannot perform on the common module.
   - Fabric's `net.fabricmc.loader.api.ModContainer` substitutes NeoForge's `net.neoforged.fml.ModContainer`
     (same simple name, so the upstream signatures are preserved; bodies use `getMetadata().getId()/getName()`).
   - `CommonConfig` mirrors `FMLConfig` (nested `ConfigValue<T>`, same entry names, ordered `ConfigSpec`), but
-    reads through Fabric paths and the bundled `forgeconfigapiport.toml`.
+    reads through Fabric paths.
 - **For large, self-contained removals, comment the block out with `/* ... */` instead of deleting it.** It
   yields a smaller patch whose hunks depend only on the block boundaries (not its body), so upstream edits
   inside the block do not break the patch. Do this only when the block contains no javadoc (`/** ... */`) —
