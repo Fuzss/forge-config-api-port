@@ -7,6 +7,6 @@
 #
 # <path> is the full package path of the upstream file, mirrored under patches/.
 
-owned neoforge net/neoforged/neoforge/common/ModConfigSpec.java
-owned neoforge net/neoforged/neoforge/common/TranslatableEnum.java
-owned fml net/neoforged/fml/config/IConfigSpec.java
+generated fml net/neoforged/fml/config/IConfigSpec.java
+generated neoforge net/neoforged/neoforge/common/ModConfigSpec.java
+generated neoforge net/neoforged/neoforge/common/TranslatableEnum.java

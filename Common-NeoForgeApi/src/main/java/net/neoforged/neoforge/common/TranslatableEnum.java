@@ -8,7 +8,7 @@ package net.neoforged.neoforge.common;
 import net.minecraft.network.chat.Component;
 
 /**
- * An enum value that can be translated.
+ * An enum value that can be be translated.
  */
 public interface TranslatableEnum {
     /**

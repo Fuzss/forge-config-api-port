@@ -27,13 +27,6 @@ public interface IConfigSpec {
     boolean isEmpty();
 
     /**
-     * Validate this specification in the context of the given {@code config}.
-     *
-     * @param config the configuration this spec is used by
-     */
-//    void validateSpec(ModConfig config);
-
-    /**
      * Checks that a config is correct.
      * If this function returns {@code false},
      * a backup is made (except for initial creation) then the config is fed through {@link #correct}.
@@ -61,7 +54,6 @@ public interface IConfigSpec {
      */
     void acceptConfig(@Nullable ILoadedConfig config);
 
-    // Forge Config API Port: make interface non-sealed, the implementation may not exist in the common subproject
     interface ILoadedConfig {
         /**
          * Accesses the current config.

@@ -170,6 +170,14 @@ Keep patches minimal and stable; they are re-applied on every upstream update, s
 - **Do not make javadoc/comment-only changes.** Dangling `@link`/`@value` warnings are acceptable.
 - Only **remove** imports for types that do not exist on the target platform.
 - **Prefer adding a method or class over patching a call site.** Adding is more stable than patching.
+- **For large, self-contained removals, comment the block out with `/* ... */` instead of deleting it.** It
+  yields a smaller patch whose hunks depend only on the block boundaries (not its body), so upstream edits
+  inside the block do not break the patch. Do this only when the block contains no javadoc (`/** ... */`) —
+  block comments cannot nest; delete outright in that case. The trade-off is that the generated file keeps the
+  code as commented-out.
+- **Do not vendor extra classes just to avoid patching call sites.** These classes keep their original packages
+  (they are not relocated), so adding more of them increases the chance of clashes with other mods that bundle
+  the same classes. Patch the call sites instead.
 - A patch must not contain a package rename; this module keeps the original packages.
 
 ## Common operations

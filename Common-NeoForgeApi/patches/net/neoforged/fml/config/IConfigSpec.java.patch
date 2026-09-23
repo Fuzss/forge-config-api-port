@@ -1,0 +1,25 @@
+--- a/net/neoforged/fml/config/IConfigSpec.java
++++ b/net/neoforged/fml/config/IConfigSpec.java
+@@ -27,13 +27,6 @@
+     boolean isEmpty();
+ 
+     /**
+-     * Validate this specification in the context of the given {@code config}.
+-     *
+-     * @param config the configuration this spec is used by
+-     */
+-    void validateSpec(ModConfig config);
+-
+-    /**
+      * Checks that a config is correct.
+      * If this function returns {@code false},
+      * a backup is made (except for initial creation) then the config is fed through {@link #correct}.
+@@ -61,7 +54,7 @@
+      */
+     void acceptConfig(@Nullable ILoadedConfig config);
+ 
+-    sealed interface ILoadedConfig permits LoadedConfig {
++    interface ILoadedConfig {
+         /**
+          * Accesses the current config.
+          *
