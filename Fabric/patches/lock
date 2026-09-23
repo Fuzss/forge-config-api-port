@@ -2,9 +2,3 @@
 # 'version.*' pins each source; all other entries are upstream hashes of 'owned' files.
 version.fml=12.0.0
 version.neoforge=26.3.0.10-beta
-net/neoforged/fml/config/ConfigTracker.java=a817d69ec9fb9e82b2ee5abbe0625d21b19b308970599d5626f73ba7fe9d9b8f
-net/neoforged/fml/config/ConfigWatcher.java=bf854ba00b2b0da3e11775f6d21cff8635bb6a69edc52fcbc8e1d83a7b11e708
-net/neoforged/fml/config/LoadedConfig.java=d152fde783ed68a66f4e5d080d18814c2280e981629a6b63454601da670ecb58
-net/neoforged/fml/config/ModConfig.java=1af397da667911d9ee9195a30e617694d2e43b04723cb1559697768e235113e6
-net/neoforged/fml/config/ModConfigs.java=b0807e23ceb87ebc5433d8956fba02df66b38462954806f3fa348aa36e74b607
-net/neoforged/neoforge/client/gui/ConfigurationScreen.java=c5b47797569f17656d6fb6790269eb504c3cb29fd906a8b836e9d22c7cbd3edf

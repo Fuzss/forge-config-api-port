@@ -6,7 +6,6 @@
 package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.InMemoryCommentedFormat;
 import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;
 import com.electronwill.nightconfig.core.concurrent.ConcurrentCommentedConfig;
@@ -19,11 +18,25 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.electronwill.nightconfig.toml.TomlParser;
 import com.electronwill.nightconfig.toml.TomlWriter;
 import com.mojang.logging.LogUtils;
-import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
-import fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues;
-import fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -31,16 +44,6 @@ import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 
 /**
  * The configuration tracker manages various types of mod configurations.
@@ -51,8 +54,7 @@ public class ConfigTracker {
     public static final ConfigTracker INSTANCE = new ConfigTracker();
     static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
     private static final Logger LOGGER = LogUtils.getLogger();
-    // Forge Config Api Port: adapted for Fabric
-    private static final Path defaultConfigPath = ForgeConfigApiPortConfig.getDefaultConfigsDirectory();
+    private static final Path defaultConfigPath = fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getDefaultConfigsDirectory();
 
     final ConcurrentHashMap<String, ModConfig> fileMap = new ConcurrentHashMap<>();
     final EnumMap<ModConfig.Type, Set<ModConfig>> configSets = new EnumMap<>(ModConfig.Type.class);
@@ -71,9 +73,8 @@ public class ConfigTracker {
      * <p>
      * Registering a configuration is required to receive configuration events.
      */
-    // Forge Config Api Port: replace ModContainer with mod id
-    public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, String modId) {
-        return registerConfig(type, spec, modId, defaultConfigName(type, modId));
+    public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, ModContainer container) {
+        return registerConfig(type, spec, container, defaultConfigName(type, container.getMetadata().getId()));
     }
 
     /**
@@ -81,45 +82,18 @@ public class ConfigTracker {
      * <p>
      * Registering a configuration is required to receive configuration events.
      */
-    // Forge Config Api Port: replace ModContainer with mod id
-    public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, String modId, String fileName) {
-        var lock = locksByMod.computeIfAbsent(modId, m -> new ReentrantLock());
-        var modConfig = new ModConfig(type, spec, modId, fileName, lock);
-        // Forge Config Api Port: method moved here from ModConfigSpec
-        validateSpec(spec, modConfig);
+    public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, ModContainer container, String fileName) {
+        var lock = locksByMod.computeIfAbsent(container.getMetadata().getId(), m -> new ReentrantLock());
+        var modConfig = new ModConfig(type, spec, container, fileName, lock);
+        fuzs.forgeconfigapiport.fabric.impl.config.ModConfigSpecValidator.validateSpec(spec, modConfig);
 
         trackConfig(modConfig);
 
-        // Forge Config Api Port: load all configs other than server immediately
-        // Unlike on NeoForge there is no more than one loading stage for mods on Fabric, therefore we get no other change to load configs.
         if (modConfig.getType() != ModConfig.Type.SERVER) {
             openConfig(modConfig, FabricLoader.getInstance().getConfigDir(), null);
         }
 
         return modConfig;
-    }
-
-    // Forge Config Api Port: method copied from ModConfigSpec
-    private void validateSpec(IConfigSpec spec, ModConfig config) {
-        if (spec instanceof ModConfigSpec) {
-            forEachValue(((ModConfigSpec) spec).getValues().valueMap().values(), configValue -> {
-                if (configValue.getSpec().restartType() == ModConfigSpec.RestartType.GAME && config.getType() == ModConfig.Type.SERVER) {
-                    throw new IllegalArgumentException("Configuration value " + String.join(".", configValue.getPath())
-                            + " defined in config " + config.getFileName() + " has restart of type " + configValue.getSpec().restartType() + " which cannot be used for configs of type " + config.getType());
-                }
-            });
-        }
-    }
-
-    // Forge Config Api Port: private helper method copied from ModConfigSpec
-    private void forEachValue(Iterable<Object> configValues, Consumer<ModConfigSpec.ConfigValue<?>> consumer) {
-        configValues.forEach(value -> {
-            if (value instanceof ModConfigSpec.ConfigValue<?> configValue) {
-                consumer.accept(configValue);
-            } else if (value instanceof Config innerConfig) {
-                forEachValue(innerConfig.valueMap().values(), consumer);
-            }
-        });
     }
 
     private static String defaultConfigName(ModConfig.Type type, String modId) {
@@ -161,12 +135,10 @@ public class ConfigTracker {
         var basePath = resolveBasePath(config, configBasePath, configOverrideBasePath);
         var configPath = basePath.resolve(config.getFileName());
 
-        // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-        loadConfig(config, configPath, ModConfigEventsHelper::onLoading);
+        loadConfig(config, configPath, fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onLoading);
         LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
 
-        // Forge Config Api Port: switch out config access
-        if (!ForgeConfigApiPortConfig.getConfigValue(ModConfigValues.DISABLE_CONFIG_WATCHER)) {
+        if (!fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues.DISABLE_CONFIG_WATCHER)) {
             FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(config, configPath, Thread.currentThread().getContextClassLoader()));
             LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
         }
@@ -183,7 +155,6 @@ public class ConfigTracker {
         return configBasePath;
     }
 
-    // Forge Config Api Port: adapt event constructor for Fabric style callback instead of Forge event
     static void loadConfig(ModConfig modConfig, Path path, Consumer<ModConfig> eventConstructor) {
         CommentedConfig config;
 
@@ -233,8 +204,7 @@ public class ConfigTracker {
             TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes), view, ParsingMode.REPLACE);
         });
         // TODO: do we want to do any validation? (what do we do if acceptConfig fails?)
-        // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-        modConfig.setConfig(new LoadedConfig(newConfig, null, modConfig), ModConfigEventsHelper::onReloading); // TODO: should maybe be Loading on the first load?
+        modConfig.setConfig(new LoadedConfig(newConfig, null, modConfig), fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onReloading); // TODO: should maybe be Loading on the first load?
     }
 
     public void loadDefaultServerConfigs() {
@@ -243,8 +213,7 @@ public class ConfigTracker {
                 LOGGER.warn("Overwriting non-null config {} at path {} with default server config", modConfig.loadedConfig, modConfig.getFileName());
             }
 
-            // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-            modConfig.setConfig(new LoadedConfig(createDefaultConfig(modConfig.getSpec()), null, modConfig), ModConfigEventsHelper::onLoading);
+            modConfig.setConfig(new LoadedConfig(createDefaultConfig(modConfig.getSpec()), null, modConfig), fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onLoading);
         });
     }
 
@@ -262,14 +231,12 @@ public class ConfigTracker {
             } else {
                 LOGGER.trace(CONFIG, "Unloading non-file config {} at path {}", config.loadedConfig, config.getFileName());
             }
-            // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-            config.setConfig(null, ModConfigEventsHelper::onUnloading);
+            config.setConfig(null, fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onUnloading);
         }
     }
 
     private static void unload(Path path) {
-        // Forge Config Api Port: switch out config access
-        if (ForgeConfigApiPortConfig.getConfigValue(ModConfigValues.DISABLE_CONFIG_WATCHER))
+        if (fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues.DISABLE_CONFIG_WATCHER))
             return;
         try {
             FileWatcher.defaultInstance().removeWatch(path);

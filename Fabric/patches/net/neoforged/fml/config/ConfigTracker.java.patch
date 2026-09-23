@@ -1,0 +1,109 @@
+--- a/net/neoforged/fml/config/ConfigTracker.java
++++ b/net/neoforged/fml/config/ConfigTracker.java
+@@ -34,11 +34,9 @@
+ import java.util.Set;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.locks.ReentrantLock;
+-import java.util.function.Function;
+-import net.neoforged.fml.ModContainer;
+-import net.neoforged.fml.event.config.ModConfigEvent;
+-import net.neoforged.fml.loading.FMLConfig;
+-import net.neoforged.fml.loading.FMLPaths;
++import java.util.function.Consumer;
++import net.fabricmc.loader.api.ModContainer;
++import net.fabricmc.loader.api.FabricLoader;
+ import org.apache.commons.io.FilenameUtils;
+ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.Nullable;
+@@ -56,7 +54,7 @@
+     public static final ConfigTracker INSTANCE = new ConfigTracker();
+     static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
+     private static final Logger LOGGER = LogUtils.getLogger();
+-    private static final Path defaultConfigPath = FMLPaths.GAMEDIR.get().resolve(FMLConfig.defaultConfigPath());
++    private static final Path defaultConfigPath = fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getDefaultConfigsDirectory();
+ 
+     final ConcurrentHashMap<String, ModConfig> fileMap = new ConcurrentHashMap<>();
+     final EnumMap<ModConfig.Type, Set<ModConfig>> configSets = new EnumMap<>(ModConfig.Type.class);
+@@ -76,7 +74,7 @@
+      * Registering a configuration is required to receive configuration events.
+      */
+     public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, ModContainer container) {
+-        return registerConfig(type, spec, container, defaultConfigName(type, container.getModId()));
++        return registerConfig(type, spec, container, defaultConfigName(type, container.getMetadata().getId()));
+     }
+ 
+     /**
+@@ -85,14 +83,14 @@
+      * Registering a configuration is required to receive configuration events.
+      */
+     public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, ModContainer container, String fileName) {
+-        var lock = locksByMod.computeIfAbsent(container.getModId(), m -> new ReentrantLock());
++        var lock = locksByMod.computeIfAbsent(container.getMetadata().getId(), m -> new ReentrantLock());
+         var modConfig = new ModConfig(type, spec, container, fileName, lock);
+-        spec.validateSpec(modConfig);
++        fuzs.forgeconfigapiport.fabric.impl.config.ModConfigSpecValidator.validateSpec(spec, modConfig);
+ 
+         trackConfig(modConfig);
+ 
+-        if (modConfig.getType() == ModConfig.Type.STARTUP) {
+-            openConfig(modConfig, FMLPaths.CONFIGDIR.get(), null);
++        if (modConfig.getType() != ModConfig.Type.SERVER) {
++            openConfig(modConfig, FabricLoader.getInstance().getConfigDir(), null);
+         }
+ 
+         return modConfig;
+@@ -137,10 +135,10 @@
+         var basePath = resolveBasePath(config, configBasePath, configOverrideBasePath);
+         var configPath = basePath.resolve(config.getFileName());
+ 
+-        loadConfig(config, configPath, ModConfigEvent.Loading::new);
++        loadConfig(config, configPath, fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onLoading);
+         LOGGER.debug(CONFIG, "Loaded TOML config file {}", configPath);
+ 
+-        if (!FMLConfig.getBoolConfigValue(FMLConfig.ConfigValue.DISABLE_CONFIG_WATCHER)) {
++        if (!fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues.DISABLE_CONFIG_WATCHER)) {
+             FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(config, configPath, Thread.currentThread().getContextClassLoader()));
+             LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
+         }
+@@ -157,7 +155,7 @@
+         return configBasePath;
+     }
+ 
+-    static void loadConfig(ModConfig modConfig, Path path, Function<ModConfig, ModConfigEvent> eventConstructor) {
++    static void loadConfig(ModConfig modConfig, Path path, Consumer<ModConfig> eventConstructor) {
+         CommentedConfig config;
+ 
+         try {
+@@ -206,7 +204,7 @@
+             TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes), view, ParsingMode.REPLACE);
+         });
+         // TODO: do we want to do any validation? (what do we do if acceptConfig fails?)
+-        modConfig.setConfig(new LoadedConfig(newConfig, null, modConfig), ModConfigEvent.Reloading::new); // TODO: should maybe be Loading on the first load?
++        modConfig.setConfig(new LoadedConfig(newConfig, null, modConfig), fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onReloading); // TODO: should maybe be Loading on the first load?
+     }
+ 
+     public void loadDefaultServerConfigs() {
+@@ -215,7 +213,7 @@
+                 LOGGER.warn("Overwriting non-null config {} at path {} with default server config", modConfig.loadedConfig, modConfig.getFileName());
+             }
+ 
+-            modConfig.setConfig(new LoadedConfig(createDefaultConfig(modConfig.getSpec()), null, modConfig), ModConfigEvent.Loading::new);
++            modConfig.setConfig(new LoadedConfig(createDefaultConfig(modConfig.getSpec()), null, modConfig), fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onLoading);
+         });
+     }
+ 
+@@ -233,12 +231,12 @@
+             } else {
+                 LOGGER.trace(CONFIG, "Unloading non-file config {} at path {}", config.loadedConfig, config.getFileName());
+             }
+-            config.setConfig(null, ModConfigEvent.Unloading::new);
++            config.setConfig(null, fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onUnloading);
+         }
+     }
+ 
+     private static void unload(Path path) {
+-        if (FMLConfig.getBoolConfigValue(FMLConfig.ConfigValue.DISABLE_CONFIG_WATCHER))
++        if (fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues.DISABLE_CONFIG_WATCHER))
+             return;
+         try {
+             FileWatcher.defaultInstance().removeWatch(path);

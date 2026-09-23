@@ -13,9 +13,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.datafixers.util.Function4;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.serialization.Codec;
-import fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig;
-import fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues;
-import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,10 +30,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -67,6 +60,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
+import net.fabricmc.loader.api.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.config.ModConfig.Type;
 import net.neoforged.fml.config.ModConfigs;
@@ -86,31 +80,31 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A generic configuration UI.<p>
- *
+ * 
  * This class is the entry point for NeoForge's generic configuration UI. You can use this in two different ways:<ul>
- *
+ * 
  * <li>As an entry point for your custom configuration screen that handles fetching your configs, matching {@link Type} to the current game, enforcing level and game restarts, etc.
  * <li>As a ready-made system but extensible that works out of the box with all configs that use the {@link ModConfigSpec} system and don't do anything overly weird with it.</ul>
- *
- * For the former one, use the 3-argument constructor {@code #ConfigurationScreen(ModContainer, Screen, Function4)} and return your own screen from the Function4. For the latter,
- * use either the 2-argument constructor {@code #ConfigurationScreen(ModContainer, Screen)} if you don't need to extend the system, or the 3-argument one and return a subclass of
+ * 
+ * For the former one, use the 3-argument constructor {@link #ConfigurationScreen(ModContainer, Screen, Function4)} and return your own screen from the Function4. For the latter,
+ * use either the 2-argument constructor {@link #ConfigurationScreen(ModContainer, Screen)} if you don't need to extend the system, or the 3-argument one and return a subclass of
  * {@link ConfigurationSectionScreen} from the Function4.<p>
- *
+ * 
  * In any case, register your configuration screen in your client mod class like this:
- *
+ * 
  * {@snippet :
- * @Mod(value = "examplemod", dist = Dist.CLIENT)
+ * &#64;Mod(value = "examplemod", dist = Dist.CLIENT)
  * public class ExampleMod {
  *     public ExampleMod(ModContainer container) {
  *         container.registerExtensionPoint(IConfigScreenFactory.class, (mc, parent) -> new ConfigurationScreen(container, parent));
  *     }
  * }
  * }
- *
+ * 
  * For extending the system, see the documentation on {@link ConfigurationSectionScreen}.<p>
- *
+ * 
  * If you only want to suppress certain elements from being displayed, you can also supply a {@link Filter} as the third parameter instead of subclassing the whole {@link ConfigurationSectionScreen}.
- *
+ * 
  */
 public final class ConfigurationScreen extends OptionsSubScreen {
     private static final class TooltipConfirmScreen extends ConfirmScreen {
@@ -165,8 +159,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         public void finish() {
-            // Forge Config Api Port: replace mod loader specific method
-            if (ForgeConfigApiPortConfig.getConfigValue(ModConfigValues.LOG_UNTRANSLATED_CONFIGURATION_WARNINGS) && CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
+            if (fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues.LOG_UNTRANSLATED_CONFIGURATION_WARNINGS) && fuzs.forgeconfigapiport.impl.services.CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("""
                         \n	Dev warning - Untranslated configuration keys encountered. Please translate your configuration keys so users can properly configure your mod.
@@ -253,30 +246,24 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     // Ideally this should not be static, but we need it in the construtor's super() call
     protected static final TranslationChecker translationChecker = new TranslationChecker();
 
-    // Forge Config Api Port: replace ModContainer with mod id
-    protected final String mod;
-    private final Function4<ConfigurationScreen, Type, ModConfig, Component, Screen> sectionScreen;
+    protected final ModContainer mod;
+    private final Function4<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen;
 
     public RestartType needsRestart = RestartType.NONE;
     // If there is only one config type (and it can be edited, we show that instantly on the way "down" and want to close on the way "up".
     // But when returning from the restart/reload confirmation screens, we need to stay open.
     private boolean autoClose = false;
 
-    // Forge Config Api Port: replace ModContainer with mod id
-    public ConfigurationScreen(final String mod, final Screen parent) {
+    public ConfigurationScreen(final ModContainer mod, final Screen parent) {
         this(mod, parent, ConfigurationSectionScreen::new);
     }
 
-    // Forge Config Api Port: replace ModContainer with mod id
-    public ConfigurationScreen(final String mod, final Screen parent, Filter filter) {
+    public ConfigurationScreen(final ModContainer mod, final Screen parent, ConfigurationSectionScreen.Filter filter) {
         this(mod, parent, (a, b, c, d) -> new ConfigurationSectionScreen(a, b, c, d, filter));
     }
 
-    // Forge Config Api Port: replace ModContainer with mod id
-    public ConfigurationScreen(final String mod, final Screen parent, Function4<ConfigurationScreen, Type, ModConfig, Component, Screen> sectionScreen) {
-        super(parent, Minecraft.getInstance().options, Component.translatable(translationChecker.check(mod + ".configuration.title", LANG_PREFIX + "title"), FabricLoader.getInstance().getModContainer(mod).map(
-                ModContainer::getMetadata).map(
-                ModMetadata::getName).orElse(mod)));
+    public ConfigurationScreen(final ModContainer mod, final Screen parent, Function4<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen) {
+        super(parent, Minecraft.getInstance().options, Component.translatable(translationChecker.check(mod.getMetadata().getId() + ".configuration.title", LANG_PREFIX + "title"), mod.getMetadata().getName()));
         this.mod = mod;
         this.sectionScreen = sectionScreen;
     }
@@ -285,11 +272,10 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     protected void addOptions() {
         Button btn = null;
         int count = 0;
-        for (final Type type : Type.values()) {
+        for (final Type type : ModConfig.Type.values()) {
             boolean headerAdded = false;
             for (final ModConfig modConfig : ModConfigs.getConfigSet(type)) {
-                // Forge Config Api Port: check for correct config spec type
-                if (modConfig.getModId().equals(mod) && modConfig.getSpec() instanceof ModConfigSpec) {
+                if (modConfig.getModId().equals(mod.getMetadata().getId()) && modConfig.getSpec() instanceof ModConfigSpec) {
                     if (!headerAdded) {
                         list.addSmall(new StringWidget(BIG_BUTTON_WIDTH, Button.DEFAULT_HEIGHT,
                                 Component.translatable(LANG_PREFIX + type.name().toLowerCase(Locale.ENGLISH)).withStyle(ChatFormatting.UNDERLINE), font), null);
@@ -325,10 +311,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
     }
 
     public Component translatableConfig(ModConfig modConfig, String suffix, String fallback) {
-        // Forge Config Api Port: replace mod loader specific method
-        return Component.translatable(translationChecker.check(mod + ".configuration.section." + modConfig.getFileName().replaceAll("[^a-zA-Z0-9]+", ".").replaceFirst("^\\.", "").replaceFirst("\\.$", "").toLowerCase(Locale.ENGLISH) + suffix, fallback), FabricLoader.getInstance().getModContainer(mod).map(
-                ModContainer::getMetadata).map(
-                ModMetadata::getName).orElse(mod));
+        return Component.translatable(translationChecker.check(mod.getMetadata().getId() + ".configuration.section." + modConfig.getFileName().replaceAll("[^a-zA-Z0-9]+", ".").replaceFirst("^\\.", "").replaceFirst("\\.$", "").toLowerCase(Locale.ENGLISH) + suffix, fallback), mod.getMetadata().getName());
     }
 
     @Override
@@ -396,16 +379,16 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
     /**
      * A UI screen that presents a single section of configuration values and allows the user to edit them, including an unlimited undo system and reset to default.<p>
-     *
+     * 
      * This class is automatically used if you use NeoForge's generic configuration UI, see {@link ConfigurationScreen}.<p>
-     *
+     * 
      * If you have special needs, you can subclass this class to achieve the desired behaviour. For example:<ul>
-     *
+     * 
      * <li>To filter out values that should not be displayed, override the matching <code>create*Value()</code> method and return null when the key matches.
      * <li>To use another UI element, override the matching <code>create*Value()</code> method and return your new UI element wrapped in a {@link Element}.
      * <li>To change the way lists work, override {@link #createList(String, ListValueSpec, ConfigValue)} and return a subclassed {@link ConfigurationListScreen}.
      * <li>To add additional (synthetic) config values, override {@link #createSyntheticValues()}.
-     * <li>To be notified on each changed value instead of getting one {@code ModConfigEvent} at the end, override {@link #onChanged(String)}. Note that {@link #onChanged(String)}
+     * <li>To be notified on each changed value instead of getting one {@link ModConfigEvent} at the end, override {@link #onChanged(String)}. Note that {@link #onChanged(String)}
      * will be called on every change (e.g. each typed character for Strings) if the new value is valid and different.
      * <li>To re-arrange your config values, declare them in the appropriate order.
      * <li>To change which values a config value can accept, supply the {@link ModConfigSpec.Builder} with a validator and/or a range.
@@ -413,7 +396,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
      * translations are printed out to the log by default. However, you need to visit every configuration screen manually for those to be collected.<br>
      * Tooltips are also taken from the language file, but if there's no translation, the comment will be used instead.
      * </ul>
-     *
+     * 
      * Note: This class subclasses vanilla's {@link OptionsSubScreen} and inherits some behaviour that is not needed. For example, we need to pass the vanilla
      * <code>options</code> to our superclass' constructor.
      */
@@ -421,7 +404,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         protected static final long MAX_SLIDER_SIZE = 256L;
 
         public record Context(String modId, Screen parent, ModConfig modConfig, ModConfigSpec modSpec,
-                              Set<? extends Entry> entries, Map<String, Object> valueSpecs, List<String> keylist, Filter filter) {
+                Set<? extends Entry> entries, Map<String, Object> valueSpecs, List<String> keylist, Filter filter) {
             @ApiStatus.Internal
             public Context {}
 
@@ -431,7 +414,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             }
 
             public static Context section(final Context parentContext, final Screen parent, final Set<? extends Entry> entries, final Map<String, Object> valueSpecs,
-                                          final String key) {
+                    final String key) {
                 return new Context(parentContext.modId, parent, parentContext.modConfig, parentContext.modSpec, entries, valueSpecs,
                         parentContext.makeKeyList(key), parentContext.filter);
             }
@@ -499,33 +482,33 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
         /**
          * Constructs a new section screen for the top-most section in a {@link ModConfig}.
-         *
+         * 
          * @param parent    The screen to return to when the user presses escape or the "Done" button.
          *                  If this is a {@link ConfigurationScreen}, additional information is passed before closing.
          * @param type      The {@link Type} this configuration is for. Only used to generate the title of the screen.
          * @param modConfig The actual config to show and edit.
          */
-        public ConfigurationSectionScreen(final Screen parent, final Type type, final ModConfig modConfig, Component title) {
+        public ConfigurationSectionScreen(final Screen parent, final ModConfig.Type type, final ModConfig modConfig, Component title) {
             this(parent, type, modConfig, title, (c, k, e) -> e);
         }
 
         /**
          * Constructs a new section screen for the top-most section in a {@link ModConfig}.
-         *
+         * 
          * @param parent    The screen to return to when the user presses escape or the "Done" button.
          *                  If this is a {@link ConfigurationScreen}, additional information is passed before closing.
          * @param type      The {@link Type} this configuration is for. Only used to generate the title of the screen.
          * @param filter    The {@link Filter} to use.
          * @param modConfig The actual config to show and edit.
          */
-        public ConfigurationSectionScreen(final Screen parent, final Type type, final ModConfig modConfig, Component title, Filter filter) {
+        public ConfigurationSectionScreen(final Screen parent, final ModConfig.Type type, final ModConfig modConfig, Component title, Filter filter) {
             this(Context.top(modConfig.getModId(), parent, modConfig, filter), title);
             needsRestart = type == Type.STARTUP ? RestartType.GAME : RestartType.NONE;
         }
 
         /**
          * Constructs a new section screen for a sub-section of a config.
-         *
+         * 
          * @param parentContext The {@link Context} object of the parent.
          * @param parent        The screen to return to when the user presses escape or the "Done" button.
          *                      If this is a {@link ConfigurationSectionScreen}, additional information is passed before closing.
@@ -534,7 +517,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
          * @param entrySet      The source for the {@link ConfigValue} objects for this section.
          */
         public ConfigurationSectionScreen(final Context parentContext, final Screen parent, final Map<String, Object> valueSpecs, final String key,
-                                          final Set<? extends Entry> entrySet, Component title) {
+                final Set<? extends Entry> entrySet, Component title) {
             this(Context.section(parentContext, parent, entrySet, valueSpecs, key), Component.translatable(CRUMB, parent.getTitle(), CRUMB_SEPARATOR, title));
         }
 
@@ -592,7 +575,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
         /**
          * This is called whenever a value is changed and the change is submitted to the appropriate {@link ConfigSpec}.
-         *
+         * 
          * @param key The key of the changed configuration. To get an absolute key, use {@link Context#makeKeyList(String)}.
          */
         protected void onChanged(final String key) {
@@ -670,20 +653,20 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
         /**
          * Override this to add additional configuration elements to the list.
-         *
+         * 
          * @return A collection of {@link Element}.
          */
         protected Collection<? extends Element> createSyntheticValues() {
             return Collections.emptyList();
         }
 
-        protected boolean isNonDefault(ConfigValue<?> cv) {
+        protected boolean isNonDefault(ModConfigSpec.ConfigValue<?> cv) {
             return !Objects.equals(cv.getRaw(), cv.getDefault());
         }
 
         protected boolean isAnyNondefault() {
             for (final Entry entry : context.entries) {
-                if (entry.getRawValue() instanceof final ConfigValue<?> cv) {
+                if (entry.getRawValue() instanceof final ModConfigSpec.ConfigValue<?> cv) {
                     if (!(getValueSpec(entry.getKey()) instanceof ListValueSpec) && isNonDefault(cv)) {
                         return true;
                     }
@@ -726,11 +709,11 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         /**
-         * Called when an entry is encountered that is neither a {@link ConfigValue} nor a section.
+         * Called when an entry is encountered that is neither a {@link ModConfigSpec.ConfigValue} nor a section.
          * Override this to produce whatever UI elements are appropriate for this object.<p>
-         *
+         * 
          * Note that this case is unusual and shouldn't happen unless someone injected something into the config system.
-         *
+         * 
          * @param key   The key of the entry.
          * @param value The entry itself.
          * @return null if no UI element should be added or an {@link Element} to be added to the UI.
@@ -741,9 +724,9 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         /**
-         * Called when a {@link ConfigValue} is found that has an unknown data type.
+         * Called when a {@link ModConfigSpec.ConfigValue} is found that has an unknown data type.
          * Override this to produce whatever UI elements are appropriate for this object.<p>
-         *
+         * 
          * @param key   The key of the entry.
          * @param value The entry itself.
          * @return null if no UI element should be added or an {@link Element} to be added to the UI.
@@ -811,15 +794,15 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             return new Element(getTranslationComponent(key), getTooltipComponent(key, null),
                     new OptionInstance<>(getTranslationKey(key), getTooltip(key, null), (caption, displayvalue) -> displayvalue instanceof TranslatableEnum tenum ? tenum.getTranslatedName() : Component.literal(displayvalue.name()),
                             new Custom<>(list), source.get(), newValue -> {
-                        // regarding change detection: new value always is different (cycle button)
-                        undoManager.add(v -> {
-                            target.accept(v);
-                            onChanged(key);
-                        }, newValue, v -> {
-                            target.accept(v);
-                            onChanged(key);
-                        }, source.get());
-                    }));
+                                // regarding change detection: new value always is different (cycle button)
+                                undoManager.add(v -> {
+                                    target.accept(v);
+                                    onChanged(key);
+                                }, newValue, v -> {
+                                    target.accept(v);
+                                    onChanged(key);
+                                }, source.get());
+                            }));
         }
 
         @Nullable
@@ -841,16 +824,16 @@ public final class ConfigurationScreen extends OptionsSubScreen {
                     new OptionInstance<>(getTranslationKey(key), getTooltip(key, range),
                             (caption, displayvalue) -> Component.literal("" + displayvalue), new OptionInstance.IntRange(range != null ? range.getMin() : 0, range != null ? range.getMax() : Integer.MAX_VALUE),
                             null, source.get(), newValue -> {
-                        if (!newValue.equals(source.get())) {
-                            undoManager.add(v -> {
-                                target.accept(v);
-                                onChanged(key);
-                            }, newValue, v -> {
-                                target.accept(v);
-                                onChanged(key);
-                            }, source.get());
-                        }
-                    }));
+                                if (!newValue.equals(source.get())) {
+                                    undoManager.add(v -> {
+                                        target.accept(v);
+                                        onChanged(key);
+                                    }, newValue, v -> {
+                                        target.accept(v);
+                                        onChanged(key);
+                                    }, source.get());
+                                }
+                            }));
         }
 
         @Nullable
@@ -861,19 +844,11 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         // if someone knows how to get a proper zero inside...
         @Nullable
         protected <T extends Number & Comparable<? super T>> Element createNumberBox(final String key, final ValueSpec spec, final Supplier<T> source,
-                                                                                     final Consumer<T> target, @Nullable final Predicate<T> tester, final Function<String, T> parser, final T zero) {
+                final Consumer<T> target, @Nullable final Predicate<T> tester, final Function<String, T> parser, final T zero) {
             final Range<T> range = spec.getRange();
 
             final EditBox box = new EditBox(font, Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, getTranslationComponent(key));
             box.setEditable(true);
-//            box.setFilter(newValueString -> {
-//                try {
-//                    parser.apply(newValueString);
-//                    return true;
-//                } catch (final NumberFormatException e) {
-//                    return isPartialNumber(newValueString, (range == null || range.getMin().compareTo(zero) < 0));
-//                }
-//            });
             box.setTooltip(Tooltip.create(getTooltipComponent(key, range)));
             box.setValue(source.get() + "");
             box.setResponder(newValueString -> {
@@ -900,23 +875,6 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             return new Element(getTranslationComponent(key), getTooltipComponent(key, null), box);
         }
 
-        protected boolean isPartialNumber(String value, boolean allowNegative) {
-            return switch (value) {
-                case "" -> true;
-                case "0" -> true;
-                case "0x" -> true;
-                case "0X" -> true;
-                case "#" -> true; // not valid for doubles, but not worth making a special case
-                case "-" -> allowNegative;
-                case "-0" -> allowNegative;
-                case "-0x" -> allowNegative;
-                case "-0X" -> allowNegative;
-                // case "-#" -> allowNegative; // Java allows this, but no thanks, that's just cursed.
-                // doubles can also do NaN, inf, and 0e0. Again, not worth making a special case for those, I say.
-                default -> false;
-            };
-        }
-
         @Nullable
         protected Element createDoubleValue(final String key, final ValueSpec spec, final Supplier<Double> source, final Consumer<Double> target) {
             return createNumberBox(key, spec, source, target, null, Double::parseDouble, 0.0);
@@ -927,8 +885,8 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             if (subconfig.isEmpty()) return null;
             return new Element(Component.translatable(SECTION, getTranslationComponent(key)), getTooltipComponent(key, null),
                     Button.builder(Component.translatable(SECTION, Component.translatable(translationChecker.check(getTranslationKey(key) + ".button", SECTION_TEXT))),
-                                    button -> minecraft.gui.setScreen(sectionCache.computeIfAbsent(key,
-                                            k -> new ConfigurationSectionScreen(context, this, subconfig.valueMap(), key, subsection.entrySet(), Component.translatable(getTranslationKey(key))).rebuild())))
+                            button -> minecraft.gui.setScreen(sectionCache.computeIfAbsent(key,
+                                    k -> new ConfigurationSectionScreen(context, this, subconfig.valueMap(), key, subsection.entrySet(), Component.translatable(getTranslationKey(key))).rebuild())))
                             .tooltip(Tooltip.create(getTooltipComponent(key, null)))
                             .width(Button.DEFAULT_WIDTH)
                             .build(),
@@ -936,11 +894,11 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         }
 
         @Nullable
-        protected <T> Element createList(final String key, final ListValueSpec spec, final ConfigValue<List<T>> list) {
+        protected <T> Element createList(final String key, final ListValueSpec spec, final ModConfigSpec.ConfigValue<List<T>> list) {
             return new Element(Component.translatable(SECTION, getTranslationComponent(key)), getTooltipComponent(key, null),
                     Button.builder(Component.translatable(SECTION, Component.translatable(translationChecker.check(getTranslationKey(key) + ".button", SECTION_TEXT))),
-                                    button -> minecraft.gui.setScreen(sectionCache.computeIfAbsent(key,
-                                            k -> new ConfigurationListScreen<>(Context.list(context, this), key, Component.translatable(CRUMB, this.getTitle(), CRUMB_SEPARATOR, getTranslationComponent(key)), spec, list)).rebuild()))
+                            button -> minecraft.gui.setScreen(sectionCache.computeIfAbsent(key,
+                                    k -> new ConfigurationListScreen<>(Context.list(context, this), key, Component.translatable(CRUMB, this.getTitle(), CRUMB_SEPARATOR, getTranslationComponent(key)), spec, list)).rebuild()))
                             .tooltip(Tooltip.create(getTooltipComponent(key, null))).build(),
                     false);
         }
@@ -987,7 +945,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
             resetButton = Button.builder(RESET, button -> {
                 List<UndoManager.Step<?>> list = new ArrayList<>();
                 for (final Entry entry : context.entries) {
-                    if (entry.getRawValue() instanceof final ConfigValue cv && !(getValueSpec(entry.getKey()) instanceof ListValueSpec) && isNonDefault(cv)) {
+                    if (entry.getRawValue() instanceof final ModConfigSpec.ConfigValue cv && !(getValueSpec(entry.getKey()) instanceof ListValueSpec) && isNonDefault(cv)) {
                         final String key = entry.getKey();
                         list.add(undoManager.step(v -> {
                             cv.set(v);
@@ -1032,17 +990,17 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
     /**
      * A UI screen that presents a list-type configuration value and allows the user to edit it, including an unlimited undo system and reset to default.<p>
-     *
+     * 
      * This class is automatically used if you use NeoForge's generic configuration UI, see {@link ConfigurationScreen}.<p>
-     *
+     * 
      * If you have special needs, you can subclass this class to achieve the desired behaviour. For example:<ul>
-     *
+     * 
      * <li>To change how the label and buttons for the individual elements look, override {@link #createListLabel(int)}.
      * <li>To use another UI element, override the matching <code>create*Value()</code> method and return your new UI element wrapped in a {@link Element}.
      * <li>To add additional (synthetic) config values, override {@link #rebuild()} and add them to <code>list</code>. ({@link #createSyntheticValues()} is not used for lists).
-     * <li>To be notified on each changed value instead of getting one {@code ModConfigEvent} at the end, override {@link #onChanged(String)} on the {@link ConfigurationScreen},
-     * not here. The list will only be updated in the {@link ConfigValue} when this screen is closed.
-     * <li>To limit the number of elements in a list, pass a {@link Range} to {@link ModConfigSpec.Builder#defineList(List, Supplier, Supplier, Predicate, Range)}.
+     * <li>To be notified on each changed value instead of getting one {@link ModConfigEvent} at the end, override {@link #onChanged(String)} on the {@link ConfigurationScreen},
+     * not here. The list will only be updated in the {@link ModConfigSpec.ConfigValue} when this screen is closed.
+     * <li>To limit the number of elements in a list, pass a {@link ModConfigSpec.Range} to {@link ModConfigSpec.Builder#defineList(List, Supplier, Supplier, Predicate, Range)}.
      * </ul>
      */
     public static class ConfigurationListScreen<T> extends ConfigurationSectionScreen {
@@ -1050,12 +1008,12 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         protected final ListValueSpec spec;
 
         // the original data
-        protected final ConfigValue<List<T>> valueList;
+        protected final ModConfigSpec.ConfigValue<List<T>> valueList;
         // the copy of the data we are working on
         protected List<T> cfgList;
 
         public ConfigurationListScreen(final Context context, final String key, final Component title, final ListValueSpec spec,
-                                       final ConfigValue<List<T>> valueList) {
+                final ModConfigSpec.ConfigValue<List<T>> valueList) {
             super(context, title);
             this.key = key;
             this.spec = spec;
@@ -1109,7 +1067,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
         /**
          * Creates a button to add a new element to the end of the list and adds it to the UI.<p>
-         *
+         * 
          * Override this if you want a different button or want to add more elements.
          */
         @SuppressWarnings("unchecked")
@@ -1135,9 +1093,9 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
         /**
          * Creates a new widget to label a list value and provide manipulation buttons for it.<p>
-         *
+         * 
          * Override this if you want different labels/buttons.
-         *
+         * 
          * @param idx The index into the list.
          * @return An {@link AbstractWidget} to be rendered in the left column of the options screen
          */
@@ -1148,17 +1106,17 @@ public final class ConfigurationScreen extends OptionsSubScreen {
         /**
          * Called when a list element is found that has an unknown or unsupported data type. Override this to produce whatever
          * UI elements are appropriate for this object.<p>
-         *
+         * 
          * Note that all types of elements that can be read from the config file as part of a list are already supported. You
          * only need this if you manipulate the contents of the list after it has been loaded.<p>
-         *
+         * 
          * If this returns null, no row will be shown on the screen, but the up/down buttons will still see your element.
          * Which means that the user will see no change when moving another element over the hidden line. Consider returning
          * a {@link StringWidget} as a placeholder instead.<p>
-         *
+         * 
          * Do <em>not</em> capture {@link #cfgList} here or in another create*Value() method. The undo/reset system will
          * replace the list, so you need to always access the field. You can (and should) capture the index.
-         *
+         * 
          * @param idx   The index into the list.
          * @param entry The entry itself.
          * @return null if this element should be skipped or an {@link Element} to be added to the UI.
@@ -1276,9 +1234,9 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
         /**
          * A widget to be used as a label in a list of configuration values.<p>
-         *
+         * 
          * It includes buttons for "move element up", "move element down", and "delete element" as well as a label.
-         *
+         * 
          */
         public class ListLabelWidget extends AbstractContainerWidget {
             protected final Button upButton = Button.builder(MOVE_LIST_ELEMENT_UP, this::up).build();
@@ -1409,7 +1367,7 @@ public final class ConfigurationScreen extends OptionsSubScreen {
 
     /**
      * A class representing an undo/redo buffer.<p>
-     *
+     * 
      * Every undo step is represented as 2 actions, one to initially execute when the step is added and
      * to redo after an undo, and one to execute to undo the step. Both get a captured parameter to make
      * defining them inline or reusing the code portion easier.

@@ -6,10 +6,8 @@
 package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper;
-import org.jetbrains.annotations.Nullable;
-
 import java.nio.file.Path;
+import org.jetbrains.annotations.Nullable;
 
 record LoadedConfig(CommentedConfig config, @Nullable Path path, ModConfig modConfig) implements IConfigSpec.ILoadedConfig {
     @Override
@@ -19,8 +17,7 @@ record LoadedConfig(CommentedConfig config, @Nullable Path path, ModConfig modCo
         }
         modConfig.lock.lock();
         try {
-            // Forge Config Api Port: invoke Fabric style callback instead of Forge event
-            ModConfigEventsHelper.onReloading(modConfig);
+            fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper.onReloading(modConfig);
         } finally {
             modConfig.lock.unlock();
         }

@@ -1,0 +1,53 @@
+--- a/net/neoforged/neoforge/client/gui/ConfigurationScreen.java
++++ b/net/neoforged/neoforge/client/gui/ConfigurationScreen.java
+@@ -60,13 +60,10 @@
+ import net.minecraft.network.chat.Component;
+ import net.minecraft.network.chat.MutableComponent;
+ import net.minecraft.util.Mth;
+-import net.neoforged.fml.ModContainer;
++import net.fabricmc.loader.api.ModContainer;
+ import net.neoforged.fml.config.ModConfig;
+ import net.neoforged.fml.config.ModConfig.Type;
+ import net.neoforged.fml.config.ModConfigs;
+-import net.neoforged.fml.event.config.ModConfigEvent;
+-import net.neoforged.fml.loading.FMLEnvironment;
+-import net.neoforged.neoforge.client.config.NeoForgeClientConfig;
+ import net.neoforged.neoforge.client.gui.ConfigurationScreen.ConfigurationSectionScreen.Filter;
+ import net.neoforged.neoforge.common.ModConfigSpec;
+ import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
+@@ -162,7 +159,7 @@
+         }
+ 
+         public void finish() {
+-            if (NeoForgeClientConfig.INSTANCE.logUntranslatedConfigurationWarnings.get() && !FMLEnvironment.isProduction() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
++            if (fuzs.forgeconfigapiport.fabric.impl.config.ForgeConfigApiPortConfig.getConfigValue(fuzs.forgeconfigapiport.fabric.impl.config.ModConfigValues.LOG_UNTRANSLATED_CONFIGURATION_WARNINGS) && fuzs.forgeconfigapiport.impl.services.CommonAbstractions.INSTANCE.isDevelopmentEnvironment() && (!untranslatables.isEmpty() || !untranslatablesWithFallback.isEmpty())) {
+                 StringBuilder stringBuilder = new StringBuilder();
+                 stringBuilder.append("""
+                         \n	Dev warning - Untranslated configuration keys encountered. Please translate your configuration keys so users can properly configure your mod.
+@@ -266,7 +263,7 @@
+     }
+ 
+     public ConfigurationScreen(final ModContainer mod, final Screen parent, Function4<ConfigurationScreen, ModConfig.Type, ModConfig, Component, Screen> sectionScreen) {
+-        super(parent, Minecraft.getInstance().options, Component.translatable(translationChecker.check(mod.getModId() + ".configuration.title", LANG_PREFIX + "title"), mod.getModInfo().getDisplayName()));
++        super(parent, Minecraft.getInstance().options, Component.translatable(translationChecker.check(mod.getMetadata().getId() + ".configuration.title", LANG_PREFIX + "title"), mod.getMetadata().getName()));
+         this.mod = mod;
+         this.sectionScreen = sectionScreen;
+     }
+@@ -278,7 +275,7 @@
+         for (final Type type : ModConfig.Type.values()) {
+             boolean headerAdded = false;
+             for (final ModConfig modConfig : ModConfigs.getConfigSet(type)) {
+-                if (modConfig.getModId().equals(mod.getModId())) {
++                if (modConfig.getModId().equals(mod.getMetadata().getId()) && modConfig.getSpec() instanceof ModConfigSpec) {
+                     if (!headerAdded) {
+                         list.addSmall(new StringWidget(BIG_BUTTON_WIDTH, Button.DEFAULT_HEIGHT,
+                                 Component.translatable(LANG_PREFIX + type.name().toLowerCase(Locale.ENGLISH)).withStyle(ChatFormatting.UNDERLINE), font), null);
+@@ -314,7 +311,7 @@
+     }
+ 
+     public Component translatableConfig(ModConfig modConfig, String suffix, String fallback) {
+-        return Component.translatable(translationChecker.check(mod.getModId() + ".configuration.section." + modConfig.getFileName().replaceAll("[^a-zA-Z0-9]+", ".").replaceFirst("^\\.", "").replaceFirst("\\.$", "").toLowerCase(Locale.ENGLISH) + suffix, fallback), mod.getModInfo().getDisplayName());
++        return Component.translatable(translationChecker.check(mod.getMetadata().getId() + ".configuration.section." + modConfig.getFileName().replaceAll("[^a-zA-Z0-9]+", ".").replaceFirst("^\\.", "").replaceFirst("\\.$", "").toLowerCase(Locale.ENGLISH) + suffix, fallback), mod.getMetadata().getName());
+     }
+ 
+     @Override

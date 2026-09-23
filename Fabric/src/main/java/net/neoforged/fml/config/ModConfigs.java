@@ -13,10 +13,11 @@ import java.util.Set;
 /**
  * This class provides access to all mod configs known to FML.
  * It can be used by mods that want to process all configs.
+ * Configs are registered via {@link ModContainer#registerConfig(ModConfig.Type, IConfigSpec)}.
  */
 public final class ModConfigs {
     public static List<ModConfig> getModConfigs(String modId) {
-        return List.copyOf(ConfigTracker.INSTANCE.configsByMod.getOrDefault(modId, List.of()));
+        return Collections.unmodifiableList(ConfigTracker.INSTANCE.configsByMod.getOrDefault(modId, List.of()));
     }
 
     public static List<String> getConfigFileNames(String modId, ModConfig.Type type) {

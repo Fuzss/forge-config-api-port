@@ -1,0 +1,65 @@
+--- a/net/neoforged/fml/config/ModConfig.java
++++ b/net/neoforged/fml/config/ModConfig.java
+@@ -7,12 +7,12 @@
+ 
+ import com.electronwill.nightconfig.core.CommentedConfig;
+ import java.nio.file.Path;
++import java.util.Locale;
+ import java.util.concurrent.locks.Lock;
+ import java.util.concurrent.locks.ReentrantLock;
+-import java.util.function.Function;
+-import net.neoforged.fml.ModContainer;
+-import net.neoforged.fml.event.config.ModConfigEvent;
+-import net.neoforged.fml.loading.StringUtils;
++import java.util.function.Consumer;
++import net.fabricmc.loader.api.ModContainer;
++import net.minecraft.util.StringRepresentable;
+ import org.jetbrains.annotations.Nullable;
+ 
+ public final class ModConfig {
+@@ -49,7 +49,7 @@
+     }
+ 
+     public String getModId() {
+-        return container.getModId();
++        return this.container.getMetadata().getId();
+     }
+ 
+     /**
+@@ -72,19 +72,19 @@
+         return loadedConfig != null ? loadedConfig.path() : null;
+     }
+ 
+-    void setConfig(@Nullable LoadedConfig loadedConfig, Function<ModConfig, ModConfigEvent> eventConstructor) {
++    void setConfig(@Nullable LoadedConfig loadedConfig, Consumer<ModConfig> eventConstructor) {
+         lock.lock();
+ 
+         try {
+             this.loadedConfig = loadedConfig;
+             spec.acceptConfig(loadedConfig);
+-            container.acceptEvent(eventConstructor.apply(this));
++            eventConstructor.accept(this);
+         } finally {
+             lock.unlock();
+         }
+     }
+ 
+-    public enum Type {
++    public enum Type implements StringRepresentable {
+         /**
+          * Common mod config for configuration that needs to be loaded on both environments.
+          * Loaded on both servers and clients.
+@@ -121,7 +121,12 @@
+         STARTUP;
+ 
+         public String extension() {
+-            return StringUtils.toLowerCase(name());
++            return this.name().toLowerCase(Locale.ROOT);
+         }
++
++        @Override
++        public String getSerializedName() {
++            return this.name();
++        }
+     }
+ }

@@ -198,6 +198,20 @@ Keep patches minimal and stable; they are re-applied on every upstream update, s
    `build/vendored-sources/owned-upstream/<path>`.
 4. `./gradlew :Fabric:build`
 
+## Design notes
+
+A few substitutions recur across the vendored Fabric config classes:
+
+- NeoForge's `net.neoforged.fml.ModContainer` is replaced by Fabric's
+  `net.fabricmc.loader.api.ModContainer` (same simple name, so the upstream signatures are preserved). Its methods map
+  as `getModId()` -> `getMetadata().getId()` and `getModInfo().getDisplayName()` -> `getMetadata().getName()`.
+  `ConfigRegistry.register(...)` still takes a mod id and resolves the container internally.
+- NeoForge's `ModConfigEvent` event-bus dispatch is replaced by the Fabric callbacks in
+  `fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper`.
+- Spec validation that `ModConfigSpec` cannot host on the common module lives in the local helper
+  `fuzs.forgeconfigapiport.fabric.impl.config.ModConfigSpecValidator`.
+- `ForgeConfigApiPortConfig` supplies config values that NeoForge reads from `FMLConfig`.
+
 ## Rules of thumb
 
 - `patches/` is the source of truth; the vendored files under `src/main/java/` are generated. Never edit them by

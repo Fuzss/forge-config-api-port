@@ -6,22 +6,20 @@
 package net.neoforged.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.StringRepresentable;
-import org.jetbrains.annotations.Nullable;
-
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.util.StringRepresentable;
+import org.jetbrains.annotations.Nullable;
 
 public final class ModConfig {
     private final Type type;
     private final IConfigSpec spec;
     private final String fileName;
-    // Forge Config Api Port: replace ModContainer with mod id
-    private final String modId;
+    final ModContainer container;
     @Nullable
     LoadedConfig loadedConfig;
     /**
@@ -30,16 +28,11 @@ public final class ModConfig {
      */
     final Lock lock;
 
-    // Forge Config Api Port: replace ModContainer with mod id
-    ModConfig(Type type, IConfigSpec spec, String modId, String fileName, ReentrantLock lock) {
+    ModConfig(Type type, IConfigSpec spec, ModContainer container, String fileName, ReentrantLock lock) {
         this.type = type;
         this.spec = spec;
         this.fileName = fileName;
-        // Forge Config Api Port: replace ModContainer with mod id, also additional check mod exists
-        if (!FabricLoader.getInstance().isModLoaded(modId)) {
-            throw new IllegalArgumentException("No mod with id '%s'".formatted(modId));
-        }
-        this.modId = modId;
+        this.container = container;
         this.lock = lock;
     }
 
@@ -56,8 +49,7 @@ public final class ModConfig {
     }
 
     public String getModId() {
-        // Forge Config Api Port: replace ModContainer with mod id
-        return this.modId;
+        return this.container.getMetadata().getId();
     }
 
     /**
@@ -80,21 +72,18 @@ public final class ModConfig {
         return loadedConfig != null ? loadedConfig.path() : null;
     }
 
-    // Forge Config Api Port: adapt event constructor for Fabric style callback instead of Forge event
     void setConfig(@Nullable LoadedConfig loadedConfig, Consumer<ModConfig> eventConstructor) {
         lock.lock();
 
         try {
             this.loadedConfig = loadedConfig;
             spec.acceptConfig(loadedConfig);
-            // Forge Config Api Port: invoke Fabric style callback instead of Forge event
             eventConstructor.accept(this);
         } finally {
             lock.unlock();
         }
     }
 
-    // Forge Config Api Port: implement StringRepresentable to allow using vanilla argument type
     public enum Type implements StringRepresentable {
         /**
          * Common mod config for configuration that needs to be loaded on both environments.
@@ -132,7 +121,6 @@ public final class ModConfig {
         STARTUP;
 
         public String extension() {
-            // Forge Config Api Port: replace NeoForge helper class method call
             return this.name().toLowerCase(Locale.ROOT);
         }
 

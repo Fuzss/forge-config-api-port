@@ -7,9 +7,9 @@
 #
 # <path> is the full package path of the upstream file, mirrored under patches/.
 
-owned fml net/neoforged/fml/config/ConfigTracker.java
-owned fml net/neoforged/fml/config/ConfigWatcher.java
-owned fml net/neoforged/fml/config/LoadedConfig.java
-owned fml net/neoforged/fml/config/ModConfig.java
-owned fml net/neoforged/fml/config/ModConfigs.java
-owned neoforge net/neoforged/neoforge/client/gui/ConfigurationScreen.java
+generated fml net/neoforged/fml/config/ConfigTracker.java
+generated fml net/neoforged/fml/config/ConfigWatcher.java
+generated fml net/neoforged/fml/config/LoadedConfig.java
+generated fml net/neoforged/fml/config/ModConfig.java
+generated fml net/neoforged/fml/config/ModConfigs.java
+generated neoforge net/neoforged/neoforge/client/gui/ConfigurationScreen.java

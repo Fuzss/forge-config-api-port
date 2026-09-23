@@ -1,0 +1,10 @@
+--- a/net/neoforged/fml/config/ModConfigs.java
++++ b/net/neoforged/fml/config/ModConfigs.java
+@@ -9,7 +9,6 @@
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+-import net.neoforged.fml.ModContainer;
+ 
+ /**
+  * This class provides access to all mod configs known to FML.

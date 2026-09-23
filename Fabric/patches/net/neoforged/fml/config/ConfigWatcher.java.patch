@@ -1,0 +1,19 @@
+--- a/net/neoforged/fml/config/ConfigWatcher.java
++++ b/net/neoforged/fml/config/ConfigWatcher.java
+@@ -7,7 +7,6 @@
+ 
+ import com.mojang.logging.LogUtils;
+ import java.nio.file.Path;
+-import net.neoforged.fml.event.config.ModConfigEvent;
+ import org.slf4j.Logger;
+ 
+ class ConfigWatcher implements Runnable {
+@@ -32,7 +31,7 @@
+             modConfig.lock.lock();
+             try {
+                 LOGGER.debug(ConfigTracker.CONFIG, "Config file {} changed, re-loading", modConfig.getFileName());
+-                ConfigTracker.loadConfig(this.modConfig, this.path, ModConfigEvent.Reloading::new);
++                ConfigTracker.loadConfig(this.modConfig, this.path, fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper::onReloading);
+             } finally {
+                 modConfig.lock.unlock();
+             }

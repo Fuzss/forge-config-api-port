@@ -2,6 +2,8 @@ package fuzs.forgeconfigapiport.fabric.impl.core;
 
 import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.neoforged.fml.config.ConfigTracker;
 import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.fml.config.ModConfig;
@@ -14,7 +16,7 @@ public final class ConfigRegistryImpl implements ConfigRegistry {
             // This handles the case where a mod tries to register a config, without any options configured inside it.
             ForgeConfigAPIPort.LOGGER.debug("Attempted to register an empty config for type {} on mod {}", type, modId);
         } else {
-            ConfigTracker.INSTANCE.registerConfig(type, spec, modId);
+            ConfigTracker.INSTANCE.registerConfig(type, spec, this.getModContainer(modId));
         }
     }
 
@@ -28,7 +30,7 @@ public final class ConfigRegistryImpl implements ConfigRegistry {
                     modId,
                     fileName);
         } else {
-            ConfigTracker.INSTANCE.registerConfig(type, spec, modId, fileName);
+            ConfigTracker.INSTANCE.registerConfig(type, spec, this.getModContainer(modId), fileName);
         }
     }
 
@@ -38,7 +40,7 @@ public final class ConfigRegistryImpl implements ConfigRegistry {
             // This handles the case where a mod tries to register a config, without any options configured inside it.
             ForgeConfigAPIPort.LOGGER.debug("Attempted to register an empty config for type {} on mod {}", type, modId);
         } else {
-            ConfigTracker.INSTANCE.registerConfig(type, new ForgeConfigSpecAdapter(spec), modId);
+            ConfigTracker.INSTANCE.registerConfig(type, new ForgeConfigSpecAdapter(spec), this.getModContainer(modId));
         }
     }
 
@@ -52,7 +54,16 @@ public final class ConfigRegistryImpl implements ConfigRegistry {
                     modId,
                     fileName);
         } else {
-            ConfigTracker.INSTANCE.registerConfig(type, new ForgeConfigSpecAdapter(spec), modId, fileName);
+            ConfigTracker.INSTANCE.registerConfig(type,
+                    new ForgeConfigSpecAdapter(spec),
+                    this.getModContainer(modId),
+                    fileName);
         }
+    }
+
+    private ModContainer getModContainer(String modId) {
+        return FabricLoader.getInstance()
+                .getModContainer(modId)
+                .orElseThrow(() -> new IllegalArgumentException("No mod with id '%s'".formatted(modId)));
     }
 }

@@ -6,6 +6,7 @@ import fuzs.forgeconfigapiport.fabric.api.v5.client.ConfigScreenFactoryRegistry;
 import fuzs.forgeconfigapiport.fabric.impl.client.core.ConfigScreenFactoryRegistryImpl;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 
@@ -18,7 +19,11 @@ public final class ModMenuApiImpl implements ModMenuApi {
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
         // cannot provide our own config screen factory below unfortunately
         if (CommonAbstractions.INSTANCE.isDevelopmentEnvironment(ForgeConfigAPIPort.MOD_ID)) {
-            return (Screen screen) -> new ConfigurationScreen(ForgeConfigAPIPort.MOD_ID, screen);
+            return (Screen screen) -> {
+                return new ConfigurationScreen(FabricLoader.getInstance()
+                        .getModContainer(ForgeConfigAPIPort.MOD_ID)
+                        .orElseThrow(), screen);
+            };
         } else {
             return ModMenuApi.super.getModConfigScreenFactory();
         }
