@@ -1,0 +1,25 @@
+--- a/net/neoforged/neoforge/network/payload/ConfigFilePayload.java
++++ b/net/neoforged/neoforge/network/payload/ConfigFilePayload.java
+@@ -10,8 +10,6 @@
+ import net.minecraft.network.codec.StreamCodec;
+ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+ import net.minecraft.resources.Identifier;
+-import net.neoforged.neoforge.common.NeoForgeMod;
+-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
+ import org.jetbrains.annotations.ApiStatus;
+ 
+ /**
+@@ -25,11 +23,11 @@
+  */
+ @ApiStatus.Internal
+ public record ConfigFilePayload(String fileName, byte[] contents) implements CustomPacketPayload {
+-    public static final Type<ConfigFilePayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(NeoForgeMod.MOD_ID, "config_file"));
++    public static final Type<ConfigFilePayload> TYPE = new Type<>(fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort.id("config_file"));
+     public static final StreamCodec<FriendlyByteBuf, ConfigFilePayload> STREAM_CODEC = StreamCodec.composite(
+             ByteBufCodecs.STRING_UTF8,
+             ConfigFilePayload::fileName,
+-            NeoForgeStreamCodecs.UNBOUNDED_BYTE_ARRAY,
++            fuzs.forgeconfigapiport.fabric.impl.network.FriendlyByteBufHelper.UNBOUNDED_BYTE_ARRAY,
+             ConfigFilePayload::contents,
+             ConfigFilePayload::new);
+ 

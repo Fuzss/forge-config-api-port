@@ -13,3 +13,7 @@ generated fml net/neoforged/fml/config/LoadedConfig.java
 generated fml net/neoforged/fml/config/ModConfig.java
 generated fml net/neoforged/fml/config/ModConfigs.java
 generated neoforge net/neoforged/neoforge/client/gui/ConfigurationScreen.java
+generated neoforge net/neoforged/neoforge/network/ConfigSync.java
+generated neoforge net/neoforged/neoforge/network/configuration/ICustomConfigurationTask.java
+generated neoforge net/neoforged/neoforge/network/configuration/SyncConfig.java
+generated neoforge net/neoforged/neoforge/network/payload/ConfigFilePayload.java

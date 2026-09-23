@@ -33,8 +33,9 @@ Two modules currently vendor upstream sources, each as its own self-contained sy
 
 - `Common-NeoForgeApi` — `net.neoforged.neoforge.common.{ModConfigSpec,TranslatableEnum}` and
   `net.neoforged.fml.config.IConfigSpec`.
-- `Fabric` — `net.neoforged.fml.config.{ConfigTracker,ConfigWatcher,LoadedConfig,ModConfig,ModConfigs}` and
-  `net.neoforged.neoforge.client.gui.ConfigurationScreen`.
+- `Fabric` — `net.neoforged.fml.config.{ConfigTracker,ConfigWatcher,LoadedConfig,ModConfig,ModConfigs}`,
+  `net.neoforged.neoforge.client.gui.ConfigurationScreen`, and the config-sync network classes
+  `net.neoforged.neoforge.network.{ConfigSync,configuration.{ICustomConfigurationTask,SyncConfig},payload.ConfigFilePayload}`.
 
 `Common-NeoForgeApi` is shared by `Fabric` and `Forge`, so **it is not relocated**: these classes must keep
 their exact upstream packages (`net.neoforged.*`) so mods can use the NeoForge/Forge API across loaders. That is

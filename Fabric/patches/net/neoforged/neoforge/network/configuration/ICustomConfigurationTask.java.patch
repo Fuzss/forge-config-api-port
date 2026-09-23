@@ -1,0 +1,10 @@
+--- a/net/neoforged/neoforge/network/configuration/ICustomConfigurationTask.java
++++ b/net/neoforged/neoforge/network/configuration/ICustomConfigurationTask.java
+@@ -41,6 +41,6 @@
+     @ApiStatus.Internal
+     @ApiStatus.NonExtendable
+     default void start(Consumer<Packet<?>> sender) {
+-        run((payload) -> sender.accept(new ClientboundCustomPayloadPacket(payload)));
++        run((payload) -> sender.accept(net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking.createClientboundPacket(payload)));
+     }
+ }

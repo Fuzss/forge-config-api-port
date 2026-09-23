@@ -3,8 +3,9 @@ package fuzs.forgeconfigapiport.fabric.impl.client;
 import fuzs.forgeconfigapiport.fabric.fml.config.ConfigTracker;
 import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
 import fuzs.forgeconfigapiport.fabric.fml.config.ModConfigs;
-import fuzs.forgeconfigapiport.fabric.impl.network.ConfigSync;
-import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
+import fuzs.forgeconfigapiport.fabric.impl.network.ConfigSyncHelper;
+import fuzs.forgeconfigapiport.fabric.neoforge.network.ConfigSync;
+import fuzs.forgeconfigapiport.fabric.neoforge.network.payload.ConfigFilePayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
@@ -25,7 +26,7 @@ public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {
 
     private static void registerEventHandlers() {
         ClientConfigurationConnectionEvents.COMPLETE.register((ClientConfigurationPacketListenerImpl handler, Minecraft client) -> {
-            ConfigSync.handleClientLoginSuccess();
+            ConfigSyncHelper.handleClientLoginSuccess();
         });
         ClientPlayConnectionEvents.DISCONNECT.register((ClientPacketListener handler, Minecraft client) -> {
             // Reset WORLD type config caches

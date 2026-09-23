@@ -231,6 +231,10 @@ A few substitutions recur across the vendored Fabric config classes:
   `fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper`.
 - Spec validation that `ModConfigSpec` cannot host on the common module lives in the local helper
   `fuzs.forgeconfigapiport.fabric.impl.config.ModConfigSpecValidator`.
+- The config-sync network classes (`ConfigSync`, `SyncConfig`, `ICustomConfigurationTask`, `ConfigFilePayload`) are
+  vendored too; their loader-only bits live in Fabric helpers outside the mirror:
+  `fuzs.forgeconfigapiport.fabric.impl.network.FriendlyByteBufHelper` (`UNBOUNDED_BYTE_ARRAY`, from
+  `NeoForgeStreamCodecs`) and `...ConfigSyncHelper` (`handleClientLoginSuccess`, which has no NeoForge counterpart).
 - `ForgeConfigApiPortConfig` supplies config values that NeoForge reads from `FMLConfig`.
 
 ## Rules of thumb
