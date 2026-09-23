@@ -79,10 +79,75 @@ object VendoredSources {
         }
     }
 
-    fun relocate(text: String, source: SourceSpec): String {
-        val target = source.relocateTo ?: return text
-        return text.replace("${source.packageRoot}.", "$target.")
+    /**
+     * Builds the `old FQN -> new FQN` map for every relocated class in the manifest. The map spans all sources, so
+     * references between sources (e.g. a `neoforge` file importing an `fml` class) are rewritten as well. Classes
+     * that are not part of the manifest (e.g. shared classes left in place) are never touched.
+     */
+    fun relocationMap(entries: List<ManifestEntry>, sourcesByName: Map<String, SourceSpec>): Map<String, String> {
+        val map = linkedMapOf<String, String>()
+        for (entry in entries) {
+            val source = entry.source?.let { sourcesByName[it] } ?: continue
+            if (source.relocateTo == null) continue
+            map[fqn(entry.path)] = fqn(source.outputPath(entry.path))
+        }
+        return map
     }
+
+    private fun fqn(path: String): String = path.removeSuffix(".java").replace('/', '.')
+
+    /**
+     * Rewrites a file's own `package` declaration from its upstream package to its relocated package.
+     */
+    fun relocatePackage(text: String, sourcePath: String, outputPath: String): String {
+        val oldPackage = sourcePath.substringBeforeLast('/').replace('/', '.')
+        val newPackage = outputPath.substringBeforeLast('/').replace('/', '.')
+        if (oldPackage == newPackage) return text
+        return text.replace("package $oldPackage;", "package $newPackage;")
+    }
+
+    fun applyRelocation(text: String, map: Map<String, String>): String {
+        var result = text
+        for ((old, new) in map.entries.sortedByDescending { it.key.length }) {
+            result = replaceToken(result, old, new)
+        }
+        return result
+    }
+
+    fun containsToken(text: String, token: String): Boolean {
+        var index = 0
+        while (true) {
+            val found = text.indexOf(token, index)
+            if (found < 0) return false
+            val end = found + token.length
+            if (hasTokenBoundaries(text, found, end)) return true
+            index = end
+        }
+    }
+
+    private fun replaceToken(text: String, old: String, new: String): String {
+        var index = 0
+        val result = StringBuilder(text.length)
+        while (true) {
+            val found = text.indexOf(old, index)
+            if (found < 0) {
+                result.append(text, index, text.length)
+                return result.toString()
+            }
+            val end = found + old.length
+            result.append(text, index, found)
+            if (hasTokenBoundaries(text, found, end)) result.append(new) else result.append(text, found, end)
+            index = end
+        }
+    }
+
+    private fun hasTokenBoundaries(text: String, start: Int, end: Int): Boolean {
+        val before = start == 0 || !isIdentifierPart(text[start - 1])
+        val after = end >= text.length || !isIdentifierPart(text[end])
+        return before && after
+    }
+
+    private fun isIdentifierPart(c: Char): Boolean = c.isLetterOrDigit() || c == '_' || c == '$'
 
     fun sha256(file: File): String {
         val digest = MessageDigest.getInstance("SHA-256")
@@ -157,6 +222,8 @@ class VendoredSourcesGenerator(private val exec: (File, List<String>) -> ExecOut
             }
         }
 
+        val relocation = VendoredSources.relocationMap(entries, sourcesByName)
+
         // Only extract sources that are actually referenced by the manifest.
         val usedSourceNames = entries.mapNotNull { it.source }.toSet()
         val upstreamDirs = sources.filter { it.name in usedSourceNames }.associate { source ->
@@ -213,15 +280,21 @@ class VendoredSourcesGenerator(private val exec: (File, List<String>) -> ExecOut
                         }
                     }
 
-                    val relocated = VendoredSources.relocate(staged.readText(), source)
+                    val outputPath = source.outputPath(entry.path)
+                    val relocated = VendoredSources.applyRelocation(
+                        VendoredSources.relocatePackage(staged.readText(), entry.path, outputPath),
+                        relocation,
+                    )
                     if (source.relocateTo != null) {
-                        check(!relocated.contains("${source.packageRoot}.")) {
-                            "Generated file '${entry.path}' still references '${source.packageRoot}.'. " +
-                                "The patch must remove or replace every loader-only reference."
+                        relocation.keys.firstOrNull { VendoredSources.containsToken(relocated, it) }?.let { stale ->
+                            error(
+                                "Generated file '${entry.path}' still references relocated class '$stale'. " +
+                                    "The patch must remove or replace every reference to it."
+                            )
                         }
                     }
 
-                    val out = File(outputDir, source.outputPath(entry.path))
+                    val out = File(outputDir, outputPath)
                     out.parentFile.mkdirs()
                     out.writeText(relocated)
                     outcomes += FileOutcome(entry.path, source.name, entry.mode, patched, patchOutput)

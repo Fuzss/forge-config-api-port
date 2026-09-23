@@ -1,8 +1,8 @@
 package fuzs.forgeconfigapiport.fabric.impl.config;
 
 import com.electronwill.nightconfig.core.Config;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
 import net.neoforged.fml.config.IConfigSpec;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.function.Consumer;

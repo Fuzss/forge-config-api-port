@@ -6,6 +6,9 @@
 package fuzs.forgeconfigapiport.fabric.impl.network;
 
 import fuzs.forgeconfigapiport.fabric.api.v6.ModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.fml.config.ConfigTracker;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfigs;
 import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
@@ -18,9 +21,6 @@ import net.minecraft.network.protocol.configuration.ServerConfigurationPacketLis
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
-import net.neoforged.fml.config.ConfigTracker;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.config.ModConfigs;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;

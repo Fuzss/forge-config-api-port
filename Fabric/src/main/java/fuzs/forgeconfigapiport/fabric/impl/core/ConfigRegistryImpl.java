@@ -1,11 +1,11 @@
 package fuzs.forgeconfigapiport.fabric.impl.core;
 
 import fuzs.forgeconfigapiport.fabric.api.v6.ConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.fml.config.ConfigTracker;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.fabricmc.loader.api.FabricLoader;
-import net.neoforged.fml.config.ConfigTracker;
 import net.neoforged.fml.config.IConfigSpec;
-import net.neoforged.fml.config.ModConfig;
 
 public final class ConfigRegistryImpl implements ConfigRegistry {
 

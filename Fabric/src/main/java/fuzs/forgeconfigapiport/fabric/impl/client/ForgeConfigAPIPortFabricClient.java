@@ -1,6 +1,9 @@
 package fuzs.forgeconfigapiport.fabric.impl.client;
 
 import com.mojang.brigadier.CommandDispatcher;
+import fuzs.forgeconfigapiport.fabric.fml.config.ConfigTracker;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfigs;
 import fuzs.forgeconfigapiport.fabric.impl.client.commands.ClientConfigCommand;
 import fuzs.forgeconfigapiport.fabric.impl.network.ConfigSync;
 import fuzs.forgeconfigapiport.fabric.impl.network.payload.ConfigFilePayload;
@@ -15,9 +18,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientConfigurationPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.commands.CommandBuildContext;
-import net.neoforged.fml.config.ConfigTracker;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.config.ModConfigs;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ForgeConfigAPIPortFabricClient implements ClientModInitializer {

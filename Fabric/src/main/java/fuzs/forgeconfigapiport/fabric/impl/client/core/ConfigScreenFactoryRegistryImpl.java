@@ -1,10 +1,10 @@
 package fuzs.forgeconfigapiport.fabric.impl.client.core;
 
 import fuzs.forgeconfigapiport.fabric.api.v6.client.ConfigScreenFactoryRegistry;
+import fuzs.forgeconfigapiport.fabric.neoforge.client.gui.ConfigurationScreen;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.gui.screens.Screen;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 
 import java.util.HashMap;
 import java.util.Map;

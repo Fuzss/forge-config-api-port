@@ -1,9 +1,9 @@
 package fuzs.forgeconfigapiport.fabric.impl.core;
 
 import fuzs.forgeconfigapiport.fabric.api.v6.ModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.neoforged.fml.config.ModConfig;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

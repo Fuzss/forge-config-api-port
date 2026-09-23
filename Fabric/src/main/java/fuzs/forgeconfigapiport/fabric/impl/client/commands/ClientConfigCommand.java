@@ -6,6 +6,8 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfigs;
 import fuzs.forgeconfigapiport.fabric.impl.client.commands.arguments.EnumArgument;
 import fuzs.forgeconfigapiport.fabric.impl.client.commands.arguments.ModIdArgument;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -13,8 +15,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.config.ModConfigs;
 
 import java.io.File;
 import java.util.List;

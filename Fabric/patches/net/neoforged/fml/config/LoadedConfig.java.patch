@@ -1,14 +1,15 @@
 --- a/net/neoforged/fml/config/LoadedConfig.java
 +++ b/net/neoforged/fml/config/LoadedConfig.java
-@@ -7,7 +7,6 @@
+@@ -7,7 +7,7 @@
  
  import com.electronwill.nightconfig.core.CommentedConfig;
  import java.nio.file.Path;
 -import net.neoforged.fml.event.config.ModConfigEvent;
++import net.neoforged.fml.config.IConfigSpec;
  import org.jetbrains.annotations.Nullable;
  
  record LoadedConfig(CommentedConfig config, @Nullable Path path, ModConfig modConfig) implements IConfigSpec.ILoadedConfig {
-@@ -18,7 +17,7 @@
+@@ -18,7 +18,7 @@
          }
          modConfig.lock.lock();
          try {

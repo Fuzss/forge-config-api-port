@@ -36,18 +36,28 @@ Two modules currently vendor upstream sources, each as its own self-contained sy
 - `Fabric` — `net.neoforged.fml.config.{ConfigTracker,ConfigWatcher,LoadedConfig,ModConfig,ModConfigs}` and
   `net.neoforged.neoforge.client.gui.ConfigurationScreen`.
 
-Unlike other projects, **the common modules are not relocated**: these classes must keep their exact upstream
-packages (`net.neoforged.*`) so mods can use the NeoForge/Forge API across loaders. That is the whole point of
-this project. Consequences:
+`Common-NeoForgeApi` is shared by `Fabric` and `Forge`, so **it is not relocated**: these classes must keep
+their exact upstream packages (`net.neoforged.*`) so mods can use the NeoForge/Forge API across loaders. That is
+the whole point of this project. Consequences:
 
-- **Never vendor an extra class just to avoid patching a call site** in these modules. Adding upstream classes
+- **Never vendor an extra class just to avoid patching a call site** in this module. Adding upstream classes
   increases the chance of clashes with other mods that bundle the same classes. Patch the call sites instead.
-- The Fabric-only classes (in `Fabric`) can be relocated in a future major, but for now they keep their packages
-  too.
+- The `Fabric`-only classes **are relocated** out of `net.neoforged` into the loader's own namespace, keeping
+  the upstream `fml` / `neoforge` split:
+  - `net.neoforged.fml.*` → `fuzs.forgeconfigapiport.fabric.fml.*`
+  - `net.neoforged.neoforge.*` → `fuzs.forgeconfigapiport.fabric.neoforge.*`
+
+Relocation is **manifest-driven**: `VendoredSources.relocationMap` builds `old FQN -> new FQN` from the manifest
+and rewrites exactly those references (plus each file's own `package` declaration) in every generated file.
+Classes that stay behind (`IConfigSpec`, `ModConfigSpec`, `TranslatableEnum`) are never touched, and references
+between sources (an `fml` file referencing a `neoforge` class) are handled as well. A patch may therefore need to
+**add** an import for a class that stays in `net.neoforged.*` (e.g. `import net.neoforged.fml.config.IConfigSpec;`)
+— a deliberate exception to the "do not add imports" rule below, because relocation moves the file out of the
+shared package.
 
 The sync is driven by `buildSrc` (`fuzs.multiloader.vendoredsources` package) and configured per module in
-`<module>/build.gradle.kts` as a list of `SourceSpec`s (name, version, package root, `relocateTo = null` for
-identity, sources jar). Sources configured:
+`<module>/build.gradle.kts` as a list of `SourceSpec`s (name, version, package root, `relocateTo` — the dot-form
+target package, or `null` to keep the original package — sources jar). Sources configured:
 
 - `neoforge` — `net.neoforged:neoforge:<version>:sources`, package root `net.neoforged.neoforge`.
 - `fml` — `net.neoforged.fancymodloader:loader:<version>:sources`, package root `net.neoforged.fml`.
@@ -83,12 +93,14 @@ Updating to a new upstream version:
 Patches are authored against pristine upstream and stored at the full upstream path
 (`patches/<full/path>.patch`, unified diff with `a/` `b/` labels). Keep them minimal and stable:
 
-- **Minimize import changes.** Prefer fully-qualified references for helper types over adding imports; standard
-  Fabric/vanilla/JDK types may be imported.
+- **Minimize import changes.** Prefer fully-qualified references for `fuzs.*` helper types over adding imports;
+  standard Fabric/vanilla/JDK types and `net.neoforged.*` types that stay in place may be imported.
 - **Do not make javadoc/comment-only changes.** Dangling `@link`/`@value` warnings are acceptable.
 - **Do not include pointless/equivalent rewrites.** Only patch what differs semantically; e.g. do not rewrite
   `Collections.unmodifiableList(...)` to `List.copyOf(...)`, or add a `this.` qualifier upstream does not have.
-- Only **remove** imports for types that do not exist on the target platform.
+- **Add** an import for a `net.neoforged.*` class that stays in place when relocation moves the file out of the
+  shared package (e.g. `IConfigSpec` in `Fabric`); otherwise only **remove** imports for types that do not exist
+  on the target platform.
 - **Prefer adding methods/classes over patching upstream call sites.** Adding is more stable. Existing examples:
   - `fuzs.forgeconfigapiport.fabric.impl.core.ModConfigEventsHelper` replaces NeoForge's `ModConfigEvent`
     event-bus dispatch.
@@ -120,5 +132,8 @@ A new patch is created by diffing a pristine upstream copy against your edited c
 - Do not commit generated output by hand — always let `syncVendoredSources` write it, then run
   `checkVendoredSources`.
 - `ConfigurationScreen` only has the `ModContainer` constructors on this branch (26.4.x); the `String` overloads were removed as an accepted major-version break. See the `ConfigScreenFactoryRegistry` v6 TODO before changing the config-screen factory API.
-- `ConfigRegistry` (`fuzs...fabric.api.v5`) is the public entry point and still takes a mod id; the
+- The relocated `Fabric` classes live in `fuzs.forgeconfigapiport.fabric.fml.*` / `...fabric.neoforge.*`. The
+  `Common-NeoForgeApi` classes they reference (`IConfigSpec`, `ModConfigSpec`, `TranslatableEnum`) stay in
+  `net.neoforged.*`, so call sites use both packages side by side.
+- `ConfigRegistry` (`fuzs...fabric.api.v6`) is the public entry point and still takes a mod id; the
   `ModContainer` change is internal to the vendored classes.

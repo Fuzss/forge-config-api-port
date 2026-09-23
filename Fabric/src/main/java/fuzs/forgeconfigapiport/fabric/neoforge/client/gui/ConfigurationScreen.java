@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
-package net.neoforged.neoforge.client.gui;
+package fuzs.forgeconfigapiport.fabric.neoforge.client.gui;
 
 import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
@@ -61,10 +61,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.fabricmc.loader.api.ModContainer;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.fml.config.ModConfigs;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen.ConfigurationSectionScreen.Filter;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig.Type;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfigs;
+import fuzs.forgeconfigapiport.fabric.neoforge.client.gui.ConfigurationScreen.ConfigurationSectionScreen.Filter;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 import net.neoforged.neoforge.common.ModConfigSpec.ListValueSpec;

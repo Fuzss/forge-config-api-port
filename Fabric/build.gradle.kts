@@ -75,10 +75,14 @@ dependencies {
     add(fmlVendoredSources.name, "net.neoforged.fancymodloader:loader:$fmlVendoredVersion:sources")
 }
 
+// The vendored NeoForge classes are relocated out of `net.neoforged` into the loader's own namespace, keeping the
+// upstream `fml` / `neoforge` split.
+val vendoredPackagePrefix = "${project.group}.${project.name.lowercase()}"
+
 val vendoredSources = provider {
     listOf(
-        SourceSpec("neoforge", neoforgeVendoredVersion, "net.neoforged.neoforge", null, neoforgeVendoredSources.singleFile),
-        SourceSpec("fml", fmlVendoredVersion, "net.neoforged.fml", null, fmlVendoredSources.singleFile),
+        SourceSpec("neoforge", neoforgeVendoredVersion, "net.neoforged.neoforge", "$vendoredPackagePrefix.neoforge", neoforgeVendoredSources.singleFile),
+        SourceSpec("fml", fmlVendoredVersion, "net.neoforged.fml", "$vendoredPackagePrefix.fml", fmlVendoredSources.singleFile),
     )
 }
 

@@ -1,6 +1,8 @@
 package fuzs.forgeconfigapiport.fabric.impl;
 
 import fuzs.forgeconfigapiport.fabric.api.v6.ConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfigs;
 import fuzs.forgeconfigapiport.fabric.impl.handler.ServerLifecycleHandler;
 import fuzs.forgeconfigapiport.fabric.impl.network.ConfigSync;
 import fuzs.forgeconfigapiport.fabric.impl.network.configuration.SyncConfig;
@@ -16,8 +18,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.config.ModConfigs;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ForgeConfigAPIPortFabric implements ModInitializer {

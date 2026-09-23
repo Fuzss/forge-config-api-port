@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
-package net.neoforged.fml.config;
+package fuzs.forgeconfigapiport.fabric.fml.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import java.nio.file.Path;
+import net.neoforged.fml.config.IConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
 record LoadedConfig(CommentedConfig config, @Nullable Path path, ModConfig modConfig) implements IConfigSpec.ILoadedConfig {

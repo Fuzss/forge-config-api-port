@@ -1,6 +1,8 @@
 package fuzs.forgeconfigapiport.fabric.impl.handler;
 
 import com.electronwill.nightconfig.core.file.FileWatcher;
+import fuzs.forgeconfigapiport.fabric.fml.config.ConfigTracker;
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
 import fuzs.forgeconfigapiport.impl.ForgeConfigAPIPort;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.event.Event;
@@ -9,8 +11,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
-import net.neoforged.fml.config.ConfigTracker;
-import net.neoforged.fml.config.ModConfig;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

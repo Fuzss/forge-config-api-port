@@ -18,14 +18,14 @@ Everything is operated through two Gradle tasks. You need only the Gradle wrappe
                           |
             manifest entry? | apply patches/<full/path>.patch (if present)
                           v
-                (no relocation: the package is kept as-is)
+        relocate `net.neoforged` -> `fuzs.forgeconfigapiport.fabric`
                           v
-   src/main/java/<full/path>   (committed)
+   src/main/java/<relocated path>   (committed)
 ```
 
 1. Each configured source jar is extracted to a scratch directory.
 2. Each `generated` file listed in `manifest` is copied from the extracted upstream, its patch (if any) is
-   applied with `patch -p1`, and then written out. This module keeps the original package (no relocation).
+   applied with `patch -p1`, relocated (see [Relocation](#relocation)), and then written out.
 3. The result is written into the module source tree; commit it like any other generated file.
 4. `checkVendoredSources` performs the same steps into a scratch directory and fails if the committed sources
    differ.
@@ -73,10 +73,10 @@ The sync is configured in `build.gradle.kts` as a list of `SourceSpec`s passed t
 
 ```kotlin
 SourceSpec(
-    name = "neoforge",                       // referenced by manifest entries
-    version = neoforgeVendoredVersion,       // recorded in lock
-    packageRoot = "net.neoforged.neoforge",  // dot-form upstream package root
-    relocateTo = null,                       // null keeps the original package
+    name = "neoforge",                              // referenced by manifest entries
+    version = neoforgeVendoredVersion,              // recorded in lock
+    packageRoot = "net.neoforged.neoforge",         // dot-form upstream package root
+    relocateTo = "$vendoredPackagePrefix.neoforge", // dot-form target package
     sourcesJar = neoforgeVendoredSources.singleFile,
 )
 ```
@@ -84,6 +84,25 @@ SourceSpec(
 Two sources are configured: `neoforge` (`net.neoforged.neoforge`) and `fml`
 (`net.neoforged.fml`, from the FancyModLoader `loader` sources artifact). Versions come from the shared
 catalog (`neoforge.version`) and this project's catalog (`fancymodloader`).
+
+## Relocation
+
+Unlike `Common-NeoForgeApi`, the `Fabric` module does not keep the upstream `net.neoforged.*` packages. It drops
+the `net.neoforged` prefix and keeps the rest, so both upstream roots stay separate:
+
+- `net.neoforged.fml.*` → `fuzs.forgeconfigapiport.fabric.fml.*`
+- `net.neoforged.neoforge.*` → `fuzs.forgeconfigapiport.fabric.neoforge.*`
+
+Relocation is **manifest-driven**, not a blind prefix replace: `VendoredSources.relocationMap` derives the
+`old FQN -> new FQN` pairs from the manifest entries and rewrites exactly those references (plus each file's own
+`package` declaration). Everything else is left alone, which matters because some `net.neoforged.*` classes are
+*not* vendored here:
+
+- `IConfigSpec`, `ModConfigSpec` and `TranslatableEnum` live in `Common-NeoForgeApi` (shared with `Forge`) and
+  stay in `net.neoforged.*`. A relocated file that uses one of them needs an **added import** (e.g.
+  `import net.neoforged.fml.config.IConfigSpec;`), because it is no longer in the same package.
+- References between sources are handled as well: `ConfigurationScreen` (source `neoforge`) importing a class
+  from source `fml` is rewritten to the `fabric.fml.*` target.
 
 ## `manifest` format
 
@@ -165,20 +184,22 @@ Patches are plain unified diffs applied with `patch -p1`, so the labels must be 
 
 Keep patches minimal and stable; they are re-applied on every upstream update, so small diffs conflict less:
 
-- **Do not add imports.** Reference relocated or helper types fully-qualified instead. This keeps the patch out
-  of the import block, which changes frequently upstream.
+- **Keep import changes minimal.** Reference `fuzs.*` helper types fully-qualified instead of importing them.
+  Standard Fabric/vanilla/JDK types and `net.neoforged.*` types that stay in place may be imported.
 - **Do not make javadoc/comment-only changes.** Dangling `@link`/`@value` warnings are acceptable.
-- Only **remove** imports for types that do not exist on the target platform.
+- **Add** an import for a `net.neoforged.*` class that stays in place when relocation moves the file out of the
+  shared package (e.g. `IConfigSpec`); otherwise only **remove** imports for types that do not exist on the
+  target platform.
 - **Prefer adding a method or class over patching a call site.** Adding is more stable than patching.
 - **For large, self-contained removals, comment the block out with `/* ... */` instead of deleting it.** It
   yields a smaller patch whose hunks depend only on the block boundaries (not its body), so upstream edits
   inside the block do not break the patch. Do this only when the block contains no javadoc (`/** ... */`) —
   block comments cannot nest; delete outright in that case. The trade-off is that the generated file keeps the
   code as commented-out.
-- **Do not vendor extra classes just to avoid patching call sites.** These classes keep their original packages
-  (they are not relocated), so adding more of them increases the chance of clashes with other mods that bundle
+- **Do not vendor extra classes just to avoid patching call sites.** The shared `Common-NeoForgeApi` classes keep
+  their original packages, so adding more of them increases the chance of clashes with other mods that bundle
   the same classes. Patch the call sites instead.
-- A patch must not contain a package rename; this module keeps the original packages.
+- A patch must not contain a package rename; relocation happens after the patch is applied.
 
 ## Common operations
 

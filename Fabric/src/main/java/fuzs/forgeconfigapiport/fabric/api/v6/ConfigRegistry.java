@@ -1,8 +1,8 @@
 package fuzs.forgeconfigapiport.fabric.api.v6;
 
+import fuzs.forgeconfigapiport.fabric.fml.config.ModConfig;
 import fuzs.forgeconfigapiport.fabric.impl.core.ConfigRegistryImpl;
 import net.neoforged.fml.config.IConfigSpec;
-import net.neoforged.fml.config.ModConfig;
 
 /**
  * Registry for adding your configs.

@@ -12,7 +12,7 @@ import java.util.function.BiFunction;
  * the mod list in-game.
  * <p>
  * Generally, this should be used to enable NeoForge's built-in config screen from
- * {@link net.neoforged.neoforge.client.gui.ConfigurationScreen}, which can optionally be extended.
+ * {@link fuzs.forgeconfigapiport.fabric.neoforge.client.gui.ConfigurationScreen}, which can optionally be extended.
  * <p>
  * Please note that the NeoForge screen is only compatible with {@link net.neoforged.neoforge.common.ModConfigSpec}, no
  * other {@link net.neoforged.fml.config.IConfigSpec} implementation is supported.
@@ -23,7 +23,7 @@ public interface ConfigScreenFactoryRegistry {
     /**
      * Registers a config screen factory for your mod.
      * <p>
-     * This will use the default {@link net.neoforged.neoforge.client.gui.ConfigurationScreen}.
+     * This will use the default {@link fuzs.forgeconfigapiport.fabric.neoforge.client.gui.ConfigurationScreen}.
      *
      * @param modId the id of your mod
      */

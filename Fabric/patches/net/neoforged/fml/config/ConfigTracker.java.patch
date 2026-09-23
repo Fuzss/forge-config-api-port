@@ -1,6 +1,6 @@
 --- a/net/neoforged/fml/config/ConfigTracker.java
 +++ b/net/neoforged/fml/config/ConfigTracker.java
-@@ -34,11 +34,9 @@
+@@ -34,11 +34,10 @@
  import java.util.Set;
  import java.util.concurrent.ConcurrentHashMap;
  import java.util.concurrent.locks.ReentrantLock;
@@ -12,10 +12,11 @@
 +import java.util.function.Consumer;
 +import net.fabricmc.loader.api.ModContainer;
 +import net.fabricmc.loader.api.FabricLoader;
++import net.neoforged.fml.config.IConfigSpec;
  import org.apache.commons.io.FilenameUtils;
  import org.jetbrains.annotations.ApiStatus;
  import org.jetbrains.annotations.Nullable;
-@@ -56,7 +54,7 @@
+@@ -56,7 +55,7 @@
      public static final ConfigTracker INSTANCE = new ConfigTracker();
      static final Marker CONFIG = MarkerFactory.getMarker("CONFIG");
      private static final Logger LOGGER = LogUtils.getLogger();
@@ -24,7 +25,7 @@
  
      final ConcurrentHashMap<String, ModConfig> fileMap = new ConcurrentHashMap<>();
      final EnumMap<ModConfig.Type, Set<ModConfig>> configSets = new EnumMap<>(ModConfig.Type.class);
-@@ -76,7 +74,7 @@
+@@ -76,7 +75,7 @@
       * Registering a configuration is required to receive configuration events.
       */
      public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, ModContainer container) {
@@ -33,7 +34,7 @@
      }
  
      /**
-@@ -85,14 +83,14 @@
+@@ -85,14 +84,14 @@
       * Registering a configuration is required to receive configuration events.
       */
      public ModConfig registerConfig(ModConfig.Type type, IConfigSpec spec, ModContainer container, String fileName) {
@@ -52,7 +53,7 @@
          }
  
          return modConfig;
-@@ -137,10 +135,10 @@
+@@ -137,10 +136,10 @@
          var basePath = resolveBasePath(config, configBasePath, configOverrideBasePath);
          var configPath = basePath.resolve(config.getFileName());
  
@@ -65,7 +66,7 @@
              FileWatcher.defaultInstance().addWatch(configPath, new ConfigWatcher(config, configPath, Thread.currentThread().getContextClassLoader()));
              LOGGER.debug(CONFIG, "Watching TOML config file {} for changes", configPath);
          }
-@@ -157,7 +155,7 @@
+@@ -157,7 +156,7 @@
          return configBasePath;
      }
  
@@ -74,7 +75,7 @@
          CommentedConfig config;
  
          try {
-@@ -206,7 +204,7 @@
+@@ -206,7 +205,7 @@
              TomlFormat.instance().createParser().parse(new ByteArrayInputStream(bytes), view, ParsingMode.REPLACE);
          });
          // TODO: do we want to do any validation? (what do we do if acceptConfig fails?)
@@ -83,7 +84,7 @@
      }
  
      public void loadDefaultServerConfigs() {
-@@ -215,7 +213,7 @@
+@@ -215,7 +214,7 @@
                  LOGGER.warn("Overwriting non-null config {} at path {} with default server config", modConfig.loadedConfig, modConfig.getFileName());
              }
  
@@ -92,7 +93,7 @@
          });
      }
  
-@@ -233,12 +231,12 @@
+@@ -233,12 +232,12 @@
              } else {
                  LOGGER.trace(CONFIG, "Unloading non-file config {} at path {}", config.loadedConfig, config.getFileName());
              }

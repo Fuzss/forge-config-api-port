@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
-package net.neoforged.fml.config;
+package fuzs.forgeconfigapiport.fabric.fml.config;
 
 import java.util.Collections;
 import java.util.List;
