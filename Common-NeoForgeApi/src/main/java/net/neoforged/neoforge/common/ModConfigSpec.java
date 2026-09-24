@@ -39,6 +39,7 @@ import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import fuzs.forgeconfigapiport.impl.core.Logging;
 import net.neoforged.fml.config.IConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -112,10 +113,10 @@ public class ModConfigSpec implements IConfigSpec {
         if (config != null && !isCorrect(config.config())) {
             // Correct in case the config did not get corrected before this function was called.
             // This should not happen under normal circumstances, hence the warning.
-            LOGGER.warn("Configuration {} is not correct. Correcting", config);
+            LOGGER.warn(Logging.CORE, "Configuration {} is not correct. Correcting", config);
             correct(config.config(),
-                    (action, path, incorrectValue, correctedValue) -> LOGGER.warn("Incorrect key {} was corrected from {} to its default, {}. {}", DOT_JOINER.join(path), incorrectValue, correctedValue, incorrectValue == correctedValue ? "This seems to be an error." : ""),
-                    (action, path, incorrectValue, correctedValue) -> LOGGER.debug("The comment on key {} does not match the spec. This may create a backup.", DOT_JOINER.join(path)));
+                    (action, path, incorrectValue, correctedValue) -> LOGGER.warn(Logging.CORE, "Incorrect key {} was corrected from {} to its default, {}. {}", DOT_JOINER.join(path), incorrectValue, correctedValue, incorrectValue == correctedValue ? "This seems to be an error." : ""),
+                    (action, path, incorrectValue, correctedValue) -> LOGGER.debug(Logging.CORE, "The comment on key {} does not match the spec. This may create a backup.", DOT_JOINER.join(path)));
 
             config.save();
         }
@@ -623,13 +624,13 @@ public class ModConfigSpec implements IConfigSpec {
                 @Override
                 public Object correct(Object value) {
                     if (!(value instanceof List) || (getSizeRange() != null && !getSizeRange().test(((List<?>) value).size()))) {
-                        LOGGER.debug("List on key {} is deemed to need correction, as it is null, not a list, or the wrong size.", path.getLast());
+                        LOGGER.debug(Logging.CORE, "List on key {} is deemed to need correction, as it is null, not a list, or the wrong size.", path.getLast());
                         return getDefault();
                     }
                     List<?> list = Lists.newArrayList((List<?>) value);
                     list.removeIf(elementValidator.negate());
                     if (list.isEmpty()) {
-                        LOGGER.debug("List on key {} is deemed to need correction. It failed validation.", path.getLast());
+                        LOGGER.debug(Logging.CORE, "List on key {} is deemed to need correction. It failed validation.", path.getLast());
                         return getDefault();
                     }
                     return list;
@@ -925,7 +926,7 @@ public class ModConfigSpec implements IConfigSpec {
         public String buildComment(final List<String> path) {
             if (comment.stream().allMatch(String::isBlank)) {
                 if (!fuzs.forgeconfigapiport.impl.services.CommonAbstractions.INSTANCE.isDevelopmentEnvironment())
-                    LOGGER.warn("Detected a comment that is all whitespace for config option {}, which causes obscure bugs in NeoForge's config system and will cause a crash in the future. Please report this to the mod author.",
+                    LOGGER.warn(Logging.CORE, "Detected a comment that is all whitespace for config option {}, which causes obscure bugs in NeoForge's config system and will cause a crash in the future. Please report this to the mod author.",
                             DOT_JOINER.join(path));
                 else
                     throw new IllegalStateException("Can not build comment for config option " + DOT_JOINER.join(path) + " as it comprises entirely of blank lines/whitespace. This is not allowed as it causes a \"constantly correcting config\" bug with NightConfig in NeoForge's config system.");
@@ -1036,7 +1037,7 @@ public class ModConfigSpec implements IConfigSpec {
                 Number n = (Number) t;
                 boolean result = ((Number) min).doubleValue() <= n.doubleValue() && n.doubleValue() <= ((Number) max).doubleValue();
                 if (!result) {
-                    LOGGER.debug("Range value {} is not within its bounds {}-{}", n.doubleValue(), ((Number) min).doubleValue(), ((Number) max).doubleValue());
+                    LOGGER.debug(Logging.CORE, "Range value {} is not within its bounds {}-{}", n.doubleValue(), ((Number) min).doubleValue(), ((Number) max).doubleValue());
                 }
                 return result;
             }
@@ -1045,7 +1046,7 @@ public class ModConfigSpec implements IConfigSpec {
 
             boolean result = c.compareTo(min) >= 0 && c.compareTo(max) <= 0;
             if (!result) {
-                LOGGER.debug("Range value {} is not within its bounds {}-{}", c, min, max);
+                LOGGER.debug(Logging.CORE, "Range value {} is not within its bounds {}-{}", c, min, max);
             }
             return result;
         }
